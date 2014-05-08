@@ -1,0 +1,10 @@
+
+
+
+# a totally useless function, just to say hello
+say_hello = object -> (to) {
+	out('hello, ' + to + '!')
+}
+
+say_hello('world')
+

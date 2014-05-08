@@ -1,0 +1,47 @@
+
+(* whitespace is obvious, i can't be assed writing out all of it's locations *)
+
+body = {expression};
+
+expression = assignment | function_call;
+
+assignment = scoped_location, ['=', value], '=', value;
+
+value = number
+	| string
+	| general_location
+	| function_call
+	| function_definition;
+
+(* functions *)
+function_call = general_location, arguments_list;
+arguments_list = '(', [value, {',', value}], ')';
+
+function_definition = [parent_injection], [parameters_list], function_body;
+parent_injection = general_location, '->';
+parameters_list =
+	'(',
+		[identifier, {',', identifier}],
+		[identifier, '=', value, {',', identifier, '=', value}], 
+	')';  (* seperating such that default args can't be mixed in with non-default args *)
+function_body = '{', body, '}';
+
+(* identifiers/locations *)
+general_location = scoped_location | clone | deep_clone;
+clone = '|', scoped_location, '|';
+deep_clone = '||', scoped_location, '||'; (* probably need better syntax for this *) 
+scoped_location = ['@' | '^'], location;
+location = identifier, {'.', identifier};
+identifier = ('_' | letter), {'_' | letter | number};
+
+(* literals *)
+number = ['-'], {digit}, ['.', {digit}];
+string = single_quote_string | double_quote_string;
+
+single_quote_string = "'", {character - "'"}, "'";
+double_quote_string = '"', {character - '"'}, '"';
+
+(* base character types *)
+character = ? /./ ?;
+digit = ? /0-9/ ?;
+letter = ? /a-zA-Z/ ?;
