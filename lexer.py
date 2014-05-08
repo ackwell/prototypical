@@ -66,7 +66,7 @@ class Lexer(object):
 				return result
 
 	def _check_eof(self):
-		if self._peek() == 'eof':
+		if self._peek() == None:
 			return Token(self._pos, 'eof', 'eof')
 
 	def _check_whitespace(self):
