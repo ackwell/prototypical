@@ -1,10 +1,33 @@
 
+val = 1 + 2 * 3;
+out(val);
+
+# (body
+# 	(assign (location 'val')
+# 		(add
+# 			(number 1)
+# 			(multiply
+# 				(number 2)
+# 				(number 3)
+# 			)
+# 		)
+# 	)
+# 	(call (location 'out')
+# 		(arguments (location 'val'))
+# 	)
+# )
 
 
-# a totally useless function, just to say hello
-say_hello = object -> (to) {
-	out('hello, ' + to + '!')
-}
+# # a totally useless function, just to say hello
+# say_hello = object -> (to) {
+# 	out('hello, ' + to + '!')
+# }
+# 
+# say_hello('world')
 
-say_hello('world')
-
+|cloned.thing|.value
+(clone
+	(location 'cloned'
+		(location 'thing')
+	)
+)

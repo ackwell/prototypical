@@ -58,6 +58,10 @@ class Lexer(object):
 			'while'
 		]
 
+	# So that the caller can rewind/fast forward to a position
+	def jump(self, pos):
+		self._pos = pos
+
 	def next(self):
 		for check in self._checks:
 			result = getattr(self, '_check_' + check)()
@@ -71,15 +75,15 @@ class Lexer(object):
 
 	def _check_whitespace(self):
 		# If there's already a newline token, we can skip multiple blank lines
-		if self._last.key == 'newline':
-			self._get_while(lambda c: c.isspace())
+		# if self._last.key == 'newline':
+		self._get_while(lambda c: c.isspace())
 
 		# Keep a newline token
-		else:
-			self._get_while(lambda c: c != '\n' and c.isspace())
-			if self._peek() == '\n':
-				self._next()
-				return Token(self._pos - 1, 'newline', '\n')
+		# else:
+		# 	self._get_while(lambda c: c != '\n' and c.isspace())
+		# 	if self._peek() == '\n':
+		# 		self._next()
+		# 		return Token(self._pos - 1, 'newline', '\n')
 
 	def _check_comments(self):
 		# Ignore comments
