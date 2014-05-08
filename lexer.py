@@ -13,7 +13,6 @@ class Lexer(object):
 		self._last = Token(None, None, None)
 
 		self._checks = [
-			'eof',
 			'whitespace',
 			'comments',
 			'string',
@@ -46,9 +45,10 @@ class Lexer(object):
 			'.',
 			'(', ')',
 			'{', '}',
-			'@', '^',
-			'+', '-', '*', '/',
-			'='
+			'@', '^', '!',
+			'+', '-', '*', '/', '%',
+			'=',
+			';'
 		]
 
 		self._keywords = [
@@ -64,14 +64,13 @@ class Lexer(object):
 
 	def next(self):
 		for check in self._checks:
-			result = getattr(self, '_check_' + check)()
-			if result != None:
+			try:
+				result = getattr(self, '_check_' + check)()
+			except EOFError:
+				result = Token(self._pos, 'eof', 'eof')
+			if result is not None:
 				self._last = result
 				return result
-
-	def _check_eof(self):
-		if self._peek() == None:
-			return Token(self._pos, 'eof', 'eof')
 
 	def _check_whitespace(self):
 		# If there's already a newline token, we can skip multiple blank lines
@@ -143,7 +142,7 @@ class Lexer(object):
 
 	def _peek(self):
 		if self._pos >= self._length:
-			return None
+			raise EOFError()
 		return self._source[self._pos]
 
 	def _next(self):

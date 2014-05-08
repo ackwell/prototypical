@@ -8,6 +8,12 @@ class Parser(object):
 		# Advance to first token
 		self._next()
 
+		self._precedence = {
+			'!': 1,
+			'*': 2, '/': 2, '%': 2,
+			'+': 3, '-': 3
+		}
+
 	def parse(self):
 		# The body of a document is treated as a function
 		return self._parse_body('eof')
@@ -53,9 +59,42 @@ class Parser(object):
 		return location
 
 	def _parse_assign(self, location = None):
-		if location == None:
+		"assign = location, ('=' | compound_assignment), value"
+		if location is None:
 			location = self._parse_location()
 
+		assign = nodes.Assign(location=location)
+
+		# Translate compound assignments into standard assignments
+		if self._peek() == 'compound assignment':
+			...
+
+		# Should be an assignment, throw hissy
+		elif self._peek() != '=':
+			...
+
+		# Eat assignment operator
+		self._next()
+
+		assign.value = self._parse_value()
+
+		return assign
+
+	def _parse_value(self):
+		first = self._parse_element()
+		return _parse_value_precedence(first)
+
+	def _parse_value_precedence(self, value, precedence=0):
+		...
+
+	def _parse_element(self):
+		"""
+		element = number
+			| string
+			| location
+			| call
+			| definition
+		"""
 		...
 
 	def _peek(self):

@@ -1,6 +1,6 @@
 
 val = 1 + 2 * 3;
-val -= 1;
+val -= 1 * (2 + 3);
 out(val);
 
 # (body
@@ -26,11 +26,11 @@ out(val);
 # 
 # say_hello('world')
 
-|cloned.thing|.value
-(location
-	(clone
-		(identity 'cloned')
-		(identity 'thing')
-	)
-	(identity 'value')
-)
+# |cloned.thing|.value
+# (location
+# 	(clone
+# 		(identity 'cloned')
+# 		(identity 'thing')
+# 	)
+# 	(identity 'value')
+# )

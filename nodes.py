@@ -3,7 +3,7 @@
 class Node(object):
 	def __str__(self):
 		return self.string()
-	
+
 	def string(self, indent = 0):
 		raise NotImplementedError()
 
@@ -13,7 +13,7 @@ class Expression(Node):
 
 class Group(Node):
 	def __init__(self, items=None):
-		if items == None: items = []
+		if items is None: items = []
 		self._items = items
 
 	def add(self, item):
@@ -58,3 +58,9 @@ class Assign(Expression):
 
 class Call(Expression):
 	...
+
+# Literals
+# TODO: Look into making literals into objects (in representation)
+class Literal(Node):
+	def __init__(self, value=None):
+		self.value = value
