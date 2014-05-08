@@ -7,17 +7,28 @@ class Expression(Node):
 	def evaluate(self):
 		raise NotImplementedError()
 
-# Core
-class Body(Node):
-	def __init__(self, expressions = []):
-		self._expressions = expressions
+class Group(Node):
+	def __init__(self, items=[]):
+		self._items = items
 
-	def add(self, expression):
-		self._expressions.append(expression)
+	def add(self, item):
+		self._items.append(item)
+
+# Core
+class Body(Group):
+	pass
+
+# Location
+class Location(Group):
+	pass
+
+class Identity(Node):
+	def __init__(self, name=''):
+		self.name = name
 
 # Expressions
 class Assign(Expression):
-	def __init__(self, location = None, value = None):
+	def __init__(self, location=None, value=None):
 		self.location = location
 		self.value = value
 

@@ -33,13 +33,29 @@ class Parser(object):
 
 	def _parse_location(self):
 		"location = [clone, '.'], identifier, {'.', identifier};"
+		location = nodes.Location()
+
 		# If first token is '|', parse the clone first
 		if self._peek() == '|':
 			...
 
 		# TODO: Error handle when no iden
 
+		while True:
+			location.add(nodes.Identity(self._token.val))
+			# If next token isn't '.', break out
+			self._next()
+			if self._peek() != '.':
+				break
+			# Consume the '.'
+			self._next()
+
+		return location
+
 	def _parse_assign(self, location = None):
+		if location == None:
+			location = self._parse_location()
+
 		...
 
 	def _peek(self):

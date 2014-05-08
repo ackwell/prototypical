@@ -1,9 +1,10 @@
 
 val = 1 + 2 * 3;
+val -= 1;
 out(val);
 
 # (body
-# 	(assign (location 'val')
+# 	(assign (location (identity 'val'))
 # 		(add
 # 			(number 1)
 # 			(multiply
@@ -12,8 +13,8 @@ out(val);
 # 			)
 # 		)
 # 	)
-# 	(call (location 'out')
-# 		(arguments (location 'val'))
+# 	(call (location (identity 'out'))
+# 		(arguments (location (identity 'val')))
 # 	)
 # )
 
@@ -26,8 +27,10 @@ out(val);
 # say_hello('world')
 
 |cloned.thing|.value
-(clone
-	(location 'cloned'
-		(location 'thing')
+(location
+	(clone
+		(identity 'cloned')
+		(identity 'thing')
 	)
+	(identity 'value')
 )
