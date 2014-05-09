@@ -17,6 +17,7 @@ class Parser(object):
 	def parse(self):
 		# The body of a document is treated as a function
 		return self._parse_body('eof')
+	__call__ = parse
 
 	def _parse_body(self, end='}'):
 		"body = {expression};"
