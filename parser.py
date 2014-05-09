@@ -33,7 +33,7 @@ class Parser(object):
 
 		# Next token is '(', it's a function call
 		if self._peek() == '(':
-			...
+			expression = self._parse_call(location)
 
 		# Otherwise, it's an assignment
 		else:
@@ -65,7 +65,31 @@ class Parser(object):
 
 		return location
 
-	def _parse_assign(self, location = None):
+	def _parse_call(self, location=None):
+		"call = location, '(', formula, {',', formula}, ')'"
+		if location is None:
+			location = self._parse_location()
+
+		# TODO: ensure next tok is '('
+		# Eat the paren
+		self._next()
+
+		call = nodes.Call(location)
+
+		# Get initial formula, then parse until end of list
+		call.add(self._parse_formula())
+		while self._peek() == ',':
+			call.add(self._parse_formula())
+
+		# Expected a ',' or ')', throw hissy
+		if self._peek() != ')':
+			raise SyntaxError
+
+		self._next()
+
+		return call
+
+	def _parse_assign(self, location=None):
 		"assign = location, ('=' | compound_assignment), formula;"
 		if location is None:
 			location = self._parse_location()
@@ -144,6 +168,10 @@ class Parser(object):
 		# Grouping: delegate because this gon be ugly
 		if key == '(':
 			return self._parse_paren()
+
+		# Location
+		if key == 'identifier':
+			return self._parse_location()
 
 		raise SyntaxError
 

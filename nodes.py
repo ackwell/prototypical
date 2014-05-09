@@ -21,9 +21,14 @@ class Group(Node):
 
 	def string(self, indent=0):
 		string = [' ' * indent, '(', self.__class__.__name__.lower(), '\n']
-		for item in self._items:
-			string.append(item.string(indent + 1))
+		string.append(self._string_items(indent + 1))
 		string += [' ' * indent, ')\n']
+		return ''.join(string)
+
+	def _string_items(self, indent=0):
+		string = []
+		for item in self._items:
+			string.append(item.string(indent))
 		return ''.join(string)
 
 # Core
@@ -38,7 +43,7 @@ class Identity(Node):
 	def __init__(self, name=''):
 		self.name = name
 
-	def string(self, indent = 0):
+	def string(self, indent=0):
 		return "{}(identity '{}')\n".format(' ' * indent, self.name)
 
 # Expressions
@@ -55,8 +60,18 @@ class Assign(Expression):
 		]
 		return ''.join(string)
 
-class Call(Expression):
-	...
+class Call(Expression, Group):
+	def __init__(self, location=None, arguments=None):
+		super().__init__(arguments)
+		self.location = location
+
+	def string(self, indent=0):
+		string = [' ' * indent, '(call\n',
+			self.location.string(indent + 1),
+			self._string_items(indent + 1),
+			' ' * indent, ')\n'
+		]
+		return ''.join(string)
 
 # Operations
 class Operation(Node):

@@ -45,7 +45,7 @@ class Lexer(object):
 		}
 
 		self._punctuation = [
-			'.',
+			'.', ',',
 			'(', ')',
 			'{', '}',
 			'@', '^', '!',
