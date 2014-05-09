@@ -3,6 +3,9 @@ class Token(object):
 	def __init__(self, pos, key, val):
 		self.pos, self.key, self.val = pos, key, val
 
+	def __str__(self):
+		return '({}: {} {})'.format(self.pos, self.key, self.val)
+
 class Lexer(object):
 	def __init__(self, filename):
 		f = open(filename, 'r', encoding='utf-8')

@@ -94,7 +94,7 @@ class Parser(object):
 
 		return assign
 
-	def _parse_formula(self\):
+	def _parse_formula(self):
 		"formula = value, {operation, value};"
 		first = self._parse_value()
 		return self._parse_formula_precedence(first)
@@ -129,19 +129,48 @@ class Parser(object):
 		        | call
 		        | definition;
 		"""
+		key = self._peek()
+
 		# Number
-		if self._peek() == 'number':
+		if key == 'number':
 			node = nodes.Literal(float(self._token.val))
 			self._next()
 			return node
 
 		# String
-		if self._peek() == 'string':
+		if key == 'string':
 			...
 
-		# Grouping
+		# Grouping: delegate because this gon be ugly
+		if key == '(':
+			return self._parse_paren()
 
 		raise SyntaxError
+
+	def _parse_paren(self):
+		self._next()
+		pos = self._token.pos
+
+		# Find the first token after closing paren
+		self.nested = 1
+		while self.nested > 0:
+			key = self._peek()
+			if key == '(':
+				self.nested += 1
+			elif key == ')':
+				self.nested -= 1
+			self._next()
+
+		# Check if it's a function body
+		if self._peek() == '{':
+			... # TODO: Parse function body
+
+		else:
+			self._lexer.jump(pos)
+			self._next()
+			formula = self._parse_formula()
+			self._next()
+			return formula
 
 	def _get_precedence(self, op):
 		return self._precedence[op] if op in self._precedence else -1
