@@ -9,9 +9,9 @@ class Parser(object):
 		self._next()
 
 		self._precedence = {
-			'!': 1,
+			'!': 3,
 			'*': 2, '/': 2, '%': 2,
-			'+': 3, '-': 3
+			'+': 1, '-': 1
 		}
 
 	def parse(self):
@@ -29,13 +29,20 @@ class Parser(object):
 	def _parse_expression(self):
 		"expression = (assignment | function_call), ';';"
 		location = self._parse_location()
+		expression = None
 
 		# Next token is '(', it's a function call
 		if self._peek() == '(':
 			...
 
 		# Otherwise, it's an assignment
-		return self._parse_assign(location)
+		else:
+			expression = self._parse_assign(location)
+
+		# TODO: Catch expression is None and peek != ';'
+		# Consume ';'
+		self._next()
+		return expression
 
 	def _parse_location(self):
 		"location = [clone, '.'], identifier, {'.', identifier};"
@@ -59,7 +66,7 @@ class Parser(object):
 		return location
 
 	def _parse_assign(self, location = None):
-		"assign = location, ('=' | compound_assignment), value"
+		"assign = location, ('=' | compound_assignment), value;"
 		if location is None:
 			location = self._parse_location()
 
@@ -81,21 +88,51 @@ class Parser(object):
 		return assign
 
 	def _parse_value(self):
+		"value = element, {operation, element};"
 		first = self._parse_element()
-		return _parse_value_precedence(first)
+		return self._parse_value_precedence(first)
 
-	def _parse_value_precedence(self, value, precedence=0):
-		...
+	def _parse_value_precedence(self, left, last_prec=0):
+		# Precedence based parsing
+		while True:
+			op = self._peek()
+
+			prec = self._get_precedence(op)
+			if prec < last_prec:
+				return left
+
+			self._next()
+
+			right = self._parse_element()
+
+			next_prec = self._get_precedence(self._peek())
+			if prec < next_prec:
+				right = self._parse_value_precedence(right, prec + 1)
+
+			left = nodes.Operation(op, left, right)
+
+		return left
 
 	def _parse_element(self):
 		"""
 		element = number
-			| string
-			| location
-			| call
-			| definition
+		        | string
+		        | location
+		        | call
+		        | definition;
 		"""
-		...
+		# Number
+		if self._peek() == 'number':
+			node = nodes.Literal(float(self._token.val))
+			self._next()
+			return node
+
+		# String
+		if self._peek() == 'string':
+			...
+
+	def _get_precedence(self, op):
+		return self._precedence[op] if op in self._precedence else -1
 
 	def _peek(self):
 		return self._token.key

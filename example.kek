@@ -1,7 +1,7 @@
 
 val = 1 + 2 * 3;
-val -= 1 * (2 + 3);
-out(val);
+# val -= 1 * (2 + 3);
+# out(val);
 
 # (body
 # 	(assign (location (identity 'val'))
