@@ -66,15 +66,17 @@ class Parser(object):
 		return location
 
 	def _parse_assign(self, location = None):
-		"assign = location, ('=' | compound_assignment), value;"
+		"assign = location, ('=' | compound_assignment), formula;"
 		if location is None:
 			location = self._parse_location()
 
 		assign = nodes.Assign(location=location)
 
 		# Translate compound assignments into standard assignments
+		op = None
 		if self._peek() == 'compound assignment':
-			...
+			# Get the operation
+			op = self._token.val.strip('=')
 
 		# Should be an assignment, throw hissy
 		elif self._peek() != '=':
@@ -83,16 +85,21 @@ class Parser(object):
 		# Eat assignment operator
 		self._next()
 
-		assign.value = self._parse_value()
+		# Grab the formula, and create compound if needed
+		formula = self._parse_formula()
+		if op:
+			formula = nodes.Operation(op, location, formula)
+
+		assign.formula = formula
 
 		return assign
 
-	def _parse_value(self):
-		"value = element, {operation, element};"
-		first = self._parse_element()
-		return self._parse_value_precedence(first)
+	def _parse_formula(self\):
+		"formula = value, {operation, value};"
+		first = self._parse_value()
+		return self._parse_formula_precedence(first)
 
-	def _parse_value_precedence(self, left, last_prec=0):
+	def _parse_formula_precedence(self, left, last_prec=0):
 		# Precedence based parsing
 		while True:
 			op = self._peek()
@@ -103,20 +110,21 @@ class Parser(object):
 
 			self._next()
 
-			right = self._parse_element()
+			right = self._parse_value()
 
 			next_prec = self._get_precedence(self._peek())
 			if prec < next_prec:
-				right = self._parse_value_precedence(right, prec + 1)
+				right = self._parse_formula_precedence(right, prec + 1)
 
 			left = nodes.Operation(op, left, right)
 
 		return left
 
-	def _parse_element(self):
+	def _parse_value(self):
 		"""
-		element = number
+		value = number
 		        | string
+		        | group
 		        | location
 		        | call
 		        | definition;
@@ -130,6 +138,10 @@ class Parser(object):
 		# String
 		if self._peek() == 'string':
 			...
+
+		# Grouping
+
+		raise SyntaxError
 
 	def _get_precedence(self, op):
 		return self._precedence[op] if op in self._precedence else -1

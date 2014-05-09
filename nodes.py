@@ -43,14 +43,14 @@ class Identity(Node):
 
 # Expressions
 class Assign(Expression):
-	def __init__(self, location=None, value=None):
+	def __init__(self, location=None, formula=None):
 		self.location = location
-		self.value = value
+		self.formula = formula
 
 	def string(self, indent = 0):
 		string = [' ' * indent, '(assign\n',
 			self.location.string(indent + 1),
-			self.value.string(indent + 1),
+			self.formula.string(indent + 1),
 			' ' * indent, ')\n'
 		]
 		return ''.join(string)
