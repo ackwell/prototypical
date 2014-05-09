@@ -3,8 +3,8 @@ from lexer import Lexer
 import nodes
 
 class Parser(object):
-	def __init__(self, filename):
-		self._lexer = Lexer(filename)
+	def __init__(self, source):
+		self._lexer = Lexer(source)
 		# Advance to first token
 		self._next()
 

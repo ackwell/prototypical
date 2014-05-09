@@ -33,7 +33,9 @@ class Group(Node):
 
 # Core
 class Body(Group):
-	pass
+	def __call__(self):
+		# TODO: actually do something
+		return self.__str__()
 
 # Location
 class Location(Group):

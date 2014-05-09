@@ -7,9 +7,8 @@ class Token(object):
 		return '({}: {} {})'.format(self.pos, self.key, self.val)
 
 class Lexer(object):
-	def __init__(self, filename):
-		f = open(filename, 'r', encoding='utf-8')
-		self._source = f.read()
+	def __init__(self, source):
+		self._source = source
 
 		self._pos = 0
 		self._length = len(self._source)
