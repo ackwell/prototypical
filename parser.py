@@ -181,6 +181,10 @@ class Parser(object):
 		if key == '(':
 			return self._parse_paren()
 
+		# Definition (no params)
+		if key == '{':
+			return self._parse_definition()
+
 		# Location
 		if key == 'identifier' or key == '|':
 			node = self._parse_location()
