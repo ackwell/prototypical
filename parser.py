@@ -25,6 +25,10 @@ class Parser(object):
 		# Capture expressions until we reach end
 		while self._peek() != end:
 			body.add(self._parse_expression())
+
+		# Eat end
+		self._next()
+
 		return body
 
 	def _parse_expression(self):
@@ -174,11 +178,11 @@ class Parser(object):
 		if key == 'identifier':
 			return self._parse_location()
 
-		raise SyntaxError
+		raise SyntaxError()
 
 	def _parse_paren(self):
-		self._next()
 		pos = self._token.pos
+		self._next()
 
 		# Find the first token after closing paren
 		self.nested = 1
@@ -190,16 +194,55 @@ class Parser(object):
 				self.nested -= 1
 			self._next()
 
+		# Point the lexer back at the beginning
+		char = self._peek()
+		self._lexer.jump(pos)
+		self._next()
+
 		# Check if it's a function body
-		if self._peek() == '{':
-			... # TODO: Parse function body
+		if char == '{':
+			definition = self._parse_definition()
+			return definition
 
 		else:
-			self._lexer.jump(pos)
 			self._next()
 			formula = self._parse_formula()
 			self._next()
 			return formula
+
+	def _parse_definition(self):
+		"definition = [parameters], '{', body, '}';"
+		args = []
+
+		# If starting on a paren, it has an args list
+		if self._peek() == '(':
+			args = self._parse_parameters()
+
+		if self._peek() != '{':
+			raise SyntaxError() # TODO: More info
+		self._next()
+
+		body = self._parse_body()
+		return nodes.Definition(args, body)
+
+	def _parse_parameters(self):
+		"parameters = '(', identifier, {',', identifier} ')';"
+		self._next()
+
+		args = []
+		while self._peek() == 'identifier':
+			args.append(nodes.Identity(self._token.val))
+
+			self._next()
+			if self._peek() != ',':
+				break
+			self._next()
+
+		if self._peek() != ')':
+			raise SyntaxError() # TODO: More info
+		self._next()
+
+		return args
 
 	def _get_precedence(self, op):
 		return self._precedence[op] if op in self._precedence else -1
@@ -220,3 +263,11 @@ if __name__ == '__main__':
 	root = parser()
 	result = root()._context
 	print('result:', result)
+
+	# print(root)
+
+	# l = Lexer(source)
+	# n = l.next()
+	# while n.key != 'eof':
+	# 	print(n)
+	# 	n = l.next()

@@ -126,13 +126,41 @@ class Call(Group):
 		self.location = location
 
 	def evaluate(self, scope):
+		# Evaluate the arguments
+		arguments = list(map(lambda i: i.evaluate(scope), self._items))
+
+		# Get the function and call it
 		function = self.location.get(scope)
-		print(function)
+		return function.call(arguments)
 
 	def string(self, indent=0):
 		string = [' ' * indent, '(call\n',
 			self.location.string(indent + 1),
 			self._string_items(indent + 1),
+			' ' * indent, ')\n'
+		]
+		return ''.join(string)
+
+class Definition(Group):
+	def __init__(self, parameters=None, body=None):
+		super().__init__(parameters)
+		self.body = body
+		self._scope = None
+
+	def evaluate(self, scope):
+		# Not being run, just assigned. The scope passed is that of the parent,
+		# so keep ref to it, and return the function definition
+		self._scope = scope
+		return self
+
+	def call(self, arguments):
+		# This time, it's actually being called. Map args and pass to body
+		print('call', arguments)
+
+	def string(self, indent=0):
+		string = [' ' * indent, '(definition\n',
+			self._string_items(indent + 1),
+			self.body.string(indent + 1),
 			' ' * indent, ')\n'
 		]
 		return ''.join(string)

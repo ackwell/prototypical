@@ -1,7 +1,12 @@
 
 val = 1 + 2 * 3;
 val -= 2 * (2 + 3);
-out(val);
+
+test = (var) {
+	out(var);
+};
+
+test(val);
 
 # (body
 # 	(assign (location (identity 'val'))
