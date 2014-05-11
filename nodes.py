@@ -1,4 +1,6 @@
 
+import copy
+
 # Base Classes
 class Node(object):
 	def __str__(self):
@@ -79,12 +81,12 @@ class Location(Group):
 		return self.get(scope)
 
 	def get(self, scope):
-		parent = self._lookup_parent(scope)
-		return parent.get(self._items[-1].name)
+		scope = self._lookup_parent(scope)
+		return self._items[-1].get(scope)
 
 	def set(self, value, scope):
-		parent = self._lookup_parent(scope)
-		parent.set(self._items[-1].name, value)
+		scope = self._lookup_parent(scope)
+		self._items[-1].set(value, scope)
 
 	def _lookup_parent(self, scope):
 		# Both get/set should fail if more than the last iden does not exist
@@ -94,12 +96,30 @@ class Location(Group):
 				raise AttributeError() # TODO: Expand with more info
 		return scope
 
+class Clone(Location):
+	def __init__(self, location=None):
+		self.location = location
+
+	def get(self, scope):
+		return copy.deepcopy(self.location.get(scope))
+
+	def set(self, value, scope):
+		# Setting on a clone serves no purpose.
+		# TODO: throw error?
+		...
+
 class Identity(Node):
 	def __init__(self, name=''):
 		self.name = name
 
 	def evaluate(self, scope):
+		return self.get(scope)
+
+	def get(self, scope):
 		return scope.get(self.name)
+
+	def set(self, value, scope):
+		return scope.set(self.name, value)
 
 	def string(self, indent=0):
 		return "{}(identity '{}')\n".format(' ' * indent, self.name)

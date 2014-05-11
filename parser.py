@@ -55,11 +55,16 @@ class Parser(object):
 
 		# If first token is '|', parse the clone first
 		if self._peek() == '|':
-			...
+			self._next()
+			clone = nodes.Clone(self._parse_location())
+			location.add(clone)
+			if self._peek() != '|':
+				raise SyntaxError() # TODO: more info
+			self._next()
 
 		# TODO: Error handle when no iden
 
-		while True:
+		while self._peek() == 'identifier':
 			location.add(nodes.Identity(self._token.val))
 			# If next token isn't '.', break out
 			self._next()

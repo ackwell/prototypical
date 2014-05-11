@@ -12,6 +12,13 @@ b.val = 5;
 out(a.val);
 # 5
 
+c = |a|;
+c.val = 10;
+out(a.val);
+# 5
+out(c.val);
+# 10
+
 # (body
 # 	(assign (location (identity 'val'))
 # 		(add
