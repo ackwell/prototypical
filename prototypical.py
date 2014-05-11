@@ -7,7 +7,7 @@ def execute(filename):
 	source = f.read()
 
 	# Parse and execute it
-	parser = Parser(source)
+	parser = p.Parser(source)
 	root = parser()
 	result = root()
 

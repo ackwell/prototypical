@@ -209,3 +209,14 @@ class Parser(object):
 
 	def _next(self):
 		self._token = self._lexer.next()
+
+
+
+
+# TEMP: driver because fuck you too windows
+if __name__ == '__main__':
+	source = open('example.prt', 'r', encoding='utf-8').read()
+	parser = Parser(source)
+	root = parser()
+	result = root()._context
+	print('result:', result)

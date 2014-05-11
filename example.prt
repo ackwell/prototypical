@@ -1,6 +1,6 @@
 
 val = 1 + 2 * 3;
-val -= 1 * (2 + 3);
+val -= 2 * (2 + 3);
 out(val);
 
 # (body
@@ -20,7 +20,7 @@ out(val);
 
 
 # # a totally useless function, just to say hello
-# say_hello = object -> (to) {
+# say_hello = (to) {
 # 	out('hello, ' + to + '!')
 # }
 # 
