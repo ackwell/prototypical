@@ -1,6 +1,9 @@
 
+import functools
+
 def definition(function):
 	class wrapper:
+		@functools.wraps(function)
 		def call(*args, **kwargs):
 			function(*args, **kwargs)
 	return wrapper
