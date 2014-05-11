@@ -32,7 +32,7 @@ class Parser(object):
 		return body
 
 	def _parse_expression(self):
-		"expression = (assignment | function_call), ';';"
+		"expression = (assign | function_call), ';';"
 		location = self._parse_location()
 		expression = None
 
@@ -71,20 +71,19 @@ class Parser(object):
 		return location
 
 	def _parse_call(self, location=None):
-		"call = location, '(', formula, {',', formula}, ')'"
+		"call = location, '(', [formula, {',', formula}], ')';"
 		if location is None:
 			location = self._parse_location()
 
 		# TODO: ensure next tok is '('
-		# Eat the paren
 		self._next()
 
 		call = nodes.Call(location)
 
-		# Get initial formula, then parse until end of list
-		call.add(self._parse_formula())
-		while self._peek() == ',':
+		if self._peek() != ')':
 			call.add(self._parse_formula())
+			while self._peek() == ',':
+				call.add(self._parse_formula())
 
 		# Expected a ')', throw hissy
 		if self._peek() != ')':
@@ -183,7 +182,7 @@ class Parser(object):
 			return self._parse_paren()
 
 		# Location
-		if key == 'identifier':
+		if key == 'identifier' or key == '|':
 			node = self._parse_location()
 
 			# Actually, nup, it's a call
@@ -192,6 +191,7 @@ class Parser(object):
 
 			return node
 
+		print(self._token)
 		raise SyntaxError()
 
 	def _parse_paren(self):

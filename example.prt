@@ -1,5 +1,16 @@
 
-out(in('Write something: ').result);
+thing = () {
+	val = 1;
+};
+
+a = thing();
+out(a.val);
+# 1
+
+b = a;
+b.val = 5;
+out(a.val);
+# 5
 
 # (body
 # 	(assign (location (identity 'val'))
