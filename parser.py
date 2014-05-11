@@ -49,9 +49,9 @@ class Parser(object):
 		self._next()
 		return expression
 
-	def _parse_location(self):
+	def _parse_location(self, identifiers=None):
 		"location = [clone, '.'], identifier, {'.', identifier};"
-		location = nodes.Location()
+		location = nodes.Location(identifiers)
 
 		# If first token is '|', parse the clone first
 		if self._peek() == '|':
@@ -86,11 +86,17 @@ class Parser(object):
 		while self._peek() == ',':
 			call.add(self._parse_formula())
 
-		# Expected a ',' or ')', throw hissy
+		# Expected a ')', throw hissy
 		if self._peek() != ')':
+			print(self._token)
 			raise SyntaxError
 
 		self._next()
+
+		# If the next token is a '.', need to transform into a location
+		if self._peek() == '.':
+			self._next()
+			call = self._parse_location([call])
 
 		return call
 
@@ -168,7 +174,9 @@ class Parser(object):
 
 		# String
 		if key == 'string':
-			...
+			node = nodes.Literal(self._token.val)
+			self._next()
+			return node
 
 		# Grouping: delegate because this gon be ugly
 		if key == '(':
@@ -176,7 +184,13 @@ class Parser(object):
 
 		# Location
 		if key == 'identifier':
-			return self._parse_location()
+			node = self._parse_location()
+
+			# Actually, nup, it's a call
+			if self._peek() == '(':
+				node = self._parse_call(node)
+
+			return node
 
 		raise SyntaxError()
 

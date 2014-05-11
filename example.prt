@@ -1,12 +1,5 @@
 
-val = 1 + 2 * 3;
-val -= 2 * (2 + 3);
-
-test = (var) {
-	out(var);
-};
-
-test(val);
+out(in('Write something: ').result);
 
 # (body
 # 	(assign (location (identity 'val'))
