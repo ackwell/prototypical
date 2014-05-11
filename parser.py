@@ -257,10 +257,12 @@ class Parser(object):
 
 
 # TEMP: driver because fuck you too windows
+from library import Library
 if __name__ == '__main__':
 	source = open('example.prt', 'r', encoding='utf-8').read()
 	parser = Parser(source)
 	root = parser()
+	root.add_parent(Library())
 	result = root()._context
 	print('result:', result)
 

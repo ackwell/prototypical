@@ -35,6 +35,9 @@ class Body(Group):
 		self._parents = []
 		self._context = {}
 
+	def add_parent(self, parent):
+		self._parents.append(parent)
+
 	def evaluate(self, arguments=None):
 		# Arguments (if passed) will be {name: value} that should be added to context
 		if arguments:
@@ -45,7 +48,7 @@ class Body(Group):
 		return self
 	__call__ = evaluate
 
-	def get(self, name): 
+	def get(self, name):
 		if name in self._context:
 			return self._context[name]
 
@@ -145,17 +148,21 @@ class Definition(Group):
 	def __init__(self, parameters=None, body=None):
 		super().__init__(parameters)
 		self.body = body
-		self._scope = None
 
 	def evaluate(self, scope):
 		# Not being run, just assigned. The scope passed is that of the parent,
-		# so keep ref to it, and return the function definition
-		self._scope = scope
+		# so add it to the body
+		self.body.add_parent(scope)
 		return self
 
 	def call(self, arguments):
 		# This time, it's actually being called. Map args and pass to body
-		print('call', arguments)
+		# TODO: Default args, possible named params
+		if len(arguments) != len(self._items):
+			raise TypeError() # TODO: More info
+
+		arguments = dict(zip(map(lambda i: i.name, self._items), arguments))
+		return self.body.evaluate(arguments)
 
 	def string(self, indent=0):
 		string = [' ' * indent, '(definition\n',
