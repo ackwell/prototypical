@@ -1,5 +1,6 @@
 
 import copy
+import operator
 
 # Base Classes
 class Node(object):
@@ -108,6 +109,13 @@ class Clone(Location):
 		# TODO: throw error?
 		...
 
+	def string(self, indent=0):
+		string = [' ' * indent, '(clone\n',
+			self.location.string(indent + 1),
+			' ' * indent, ')\n'
+		]
+		return ''.join(string)
+
 class Identity(Node):
 	def __init__(self, name=''):
 		self.name = name
@@ -199,18 +207,20 @@ class Operation(Node):
 		self.left = left
 		self.right = right
 
+		self.ops = {
+			'+': operator.add,
+			'-': operator.sub,
+			'*': operator.mul,
+			'/': operator.truediv,
+			'%': operator.mod
+		}
+
 	def evaluate(self, scope):
 		# Probably expand to do something else or some shit i dunno
 		left, right = self.left.evaluate(scope), self.right.evaluate(scope)
 
-		if self.op == '+':
-			return left + right
-		elif self.op == '-':
-			return left - right
-		elif self.op == '*':
-			return left * right
-		elif self.op == '/':
-			return left / right
+		if self.op in self.ops:
+			return self.ops[self.op](left, right)
 
 	def string(self, indent=0):
 		string = [' ' * indent, '(operation ', self.op, '\n',
