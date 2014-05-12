@@ -9,9 +9,10 @@ class Parser(object):
 		self._next()
 
 		self._precedence = {
-			'!': 3,
-			'*': 2, '/': 2, '%': 2,
-			'+': 1, '-': 1
+			'!': 4,
+			'*': 3, '/': 3, '%': 3,
+			'+': 2, '-': 2,
+			'comparison': 1
 		}
 
 	def parse(self):
@@ -146,6 +147,10 @@ class Parser(object):
 			prec = self._get_precedence(op)
 			if prec < last_prec:
 				return left
+
+			# Comparisons have the actual operation stored in val
+			if op == 'comparison':
+				op = self._token.val
 
 			self._next()
 

@@ -208,11 +208,17 @@ class Operation(Node):
 		self.right = right
 
 		self.ops = {
-			'+': operator.add,
-			'-': operator.sub,
-			'*': operator.mul,
-			'/': operator.truediv,
-			'%': operator.mod
+			'+':  operator.add,
+			'-':  operator.sub,
+			'*':  operator.mul,
+			'/':  operator.truediv,
+			'%':  operator.mod,
+			'<':  operator.lt,
+			'<=': operator.le,
+			'>':  operator.gt,
+			'>=': operator.ge,
+			'==': operator.eq,
+			'!=': operator.ne
 		}
 
 	def evaluate(self, scope):
