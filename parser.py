@@ -89,6 +89,7 @@ class Parser(object):
 		if self._peek() != ')':
 			call.add(self._parse_formula())
 			while self._peek() == ',':
+				self._next()
 				call.add(self._parse_formula())
 
 		# Expected a ')', throw hissy
