@@ -1,22 +1,15 @@
 
 import functools
+import nodes
 
 def definition(function):
-	class wrapper:
-		def __init__(self):
-			self._vars = {}
-
+	# Actually takes the place of a Definition node, but
+	# this handles all of that extra stuff anyway.
+	class wrapper(nodes.Body):
 		@functools.wraps(function)
-		def call(self, *args, **kwargs):
-			self._vars['result'] = function(*args, **kwargs)
+		def call(self, args):
+			self._context['result'] = function(self, *args)
 			return self
-
-		def get(self, name):
-			if name in self._vars:
-				return self._vars[name]
-
-		def set(self, name, value):
-			self._vars[name] = value
 
 	return wrapper()
 
@@ -30,10 +23,10 @@ class Library(object):
 		raise SyntaxError() # TODO: more info, can't have them overriding builtins
 
 	@definition
-	def _func_in(args):
+	def _func_in(func, *args):
 		print(*args, end='', flush=True)
 		return input()
 
 	@definition
-	def _func_out(args):
+	def _func_out(func, *args):
 		print(*args)

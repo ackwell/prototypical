@@ -30,6 +30,21 @@ class Group(Node):
 			string.append(item.string(indent))
 		return ''.join(string)
 
+# Seriously hacky shit used by other nodes to fake scopes
+class Namespace(object):
+	def __init__(self, name, child):
+		self._name = name
+		self._child = child
+
+	def get(self, name, limiter=''):
+		if name == self._name:
+			return self._child
+		return Null()
+
+	def set(self, name, value, limiter=''):
+		# Can't override a namespace, soz
+		raise AttributeError() # TODO: more info
+
 # Core
 class Body(Group):
 	def __init__(self, expressions=None):
@@ -62,6 +77,9 @@ class Body(Group):
 				if result:
 					return result
 
+		# Nothing found, null it
+		return Null()
+
 	def set(self, name, value, limiter=''):
 		# Check local scope first
 		if 'self' in limiter and name in self._context:
@@ -81,7 +99,6 @@ class Body(Group):
 			return
 
 		# Limiter excluding self, but nothing found. Raise error.
-		print(name, '->'+limiter+'<-')
 		raise AttributeError() # TODO: more info
 
 # Location
@@ -159,8 +176,9 @@ class Call(Group):
 		# Evaluate the arguments
 		arguments = list(map(lambda i: i.evaluate(scope), self._items))
 
-		# Get the function and call it
+		# Get the function, add the calling scope as 'chain', and call it
 		function = self.location.evaluate(scope)
+		function.add_parent(Namespace('chain', scope))
 		return function.call(arguments)
 
 	def string(self, indent=0):
@@ -194,6 +212,9 @@ class Definition(Group):
 	def __init__(self, parameters=None, body=None):
 		super().__init__(parameters)
 		self.body = body
+
+	def add_parent(self, parent):
+		self.body.add_parent(parent)
 
 	def evaluate(self, scope):
 		# Not being run, just assigned. The scope passed is that of the parent,
