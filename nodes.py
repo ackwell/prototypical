@@ -7,7 +7,7 @@ class Node(object):
 	def __str__(self):
 		return self.string()
 
-	# def string(self, indent = 0):
+	# def _string(self, indent = 0):
 	# 	raise NotImplementedError()
 
 class Group(Node):
@@ -41,7 +41,7 @@ class Body(Group):
 	def add_parent(self, parent):
 		self._parents.append(parent)
 
-	def evaluate(self, arguments=None):
+	def call(self, arguments=None):
 		# Arguments (if passed) will be {name: value} that should be added to context
 		if arguments:
 			self._context.update(arguments)
@@ -49,7 +49,7 @@ class Body(Group):
 		for expression in self._items:
 			expression.evaluate(self)
 		return self
-	__call__ = evaluate
+	__call__ = call
 
 	def get(self, name):
 		if name in self._context:
@@ -69,7 +69,7 @@ class Body(Group):
 		# Wasn't local, check parents
 		for parent in self._parents:
 			if parent.get(name):
-				parent.set(name)
+				parent.set(name, value)
 				return
 
 		# Wasn't in a parent either, set new var locally
@@ -78,21 +78,19 @@ class Body(Group):
 # Location
 class Location(Group):
 	def evaluate(self, scope):
-		# Needed so it can be treated as a value
-		return self.get(scope)
+		return self.value(scope)
 
-	def get(self, scope):
+	def value(self, scope):
 		scope = self._lookup_parent(scope)
-		return self._items[-1].get(scope)
+		return self._items[-1].value(scope)
 
-	def set(self, value, scope):
+	def assign(self, value, scope):
 		scope = self._lookup_parent(scope)
-		self._items[-1].set(value, scope)
+		self._items[-1].assign(value, scope)
 
 	def _lookup_parent(self, scope):
-		# Both get/set should fail if more than the last iden does not exist
 		for identity in self._items[:-1]:
-			scope = identity.evaluate(scope)
+			scope = identity.value(scope)
 			if scope == None:
 				return Null()
 		return scope
@@ -101,10 +99,10 @@ class Clone(Location):
 	def __init__(self, location=None):
 		self.location = location
 
-	def get(self, scope):
-		return copy.deepcopy(self.location.get(scope))
+	def value(self, scope):
+		return copy.deepcopy(self.location.value(scope))
 
-	def set(self, value, scope):
+	def assign(self, value, scope):
 		# Setting on a clone serves no purpose.
 		# TODO: throw error?
 		...
@@ -121,13 +119,10 @@ class Identity(Node):
 	def __init__(self, name=''):
 		self.name = name
 
-	def evaluate(self, scope):
-		return self.get(scope)
-
-	def get(self, scope):
+	def value(self, scope):
 		return scope.get(self.name)
 
-	def set(self, value, scope):
+	def assign(self, value, scope):
 		return scope.set(self.name, value)
 
 	def string(self, indent=0):
@@ -138,15 +133,12 @@ class Call(Group):
 		super().__init__(arguments)
 		self.location = location
 
-	def get(self, scope):
-		return self.evaluate(scope)
-
-	def evaluate(self, scope):
+	def value(self, scope):
 		# Evaluate the arguments
-		arguments = list(map(lambda i: i.evaluate(scope), self._items))
+		arguments = list(map(lambda i: i.value(scope), self._items))
 
 		# Get the function and call it
-		function = self.location.get(scope)
+		function = self.location.value(scope)
 		return function.call(arguments)
 
 	def string(self, indent=0):
@@ -165,8 +157,8 @@ class Assign(Node):
 
 	def evaluate(self, scope):
 		# Need to have scope, so let python chuck a hissy if none is passed
-		result = self.formula.evaluate(scope)
-		self.location.set(result, scope)
+		result = self.formula.value(scope)
+		self.location.assign(result, scope)
 
 	def string(self, indent=0):
 		string = [' ' * indent, '(assign\n',
@@ -181,7 +173,7 @@ class Definition(Group):
 		super().__init__(parameters)
 		self.body = body
 
-	def evaluate(self, scope):
+	def value(self, scope):
 		# Not being run, just assigned. The scope passed is that of the parent,
 		# so add it to the body
 		self.body.add_parent(scope)
@@ -194,7 +186,7 @@ class Definition(Group):
 			raise TypeError() # TODO: More info
 
 		arguments = dict(zip(map(lambda i: i.name, self._items), arguments))
-		return self.body.evaluate(arguments)
+		return self.body.call(arguments)
 
 	def string(self, indent=0):
 		string = [' ' * indent, '(definition\n',
@@ -225,9 +217,9 @@ class Operation(Node):
 			'!=': operator.ne
 		}
 
-	def evaluate(self, scope):
+	def value(self, scope):
 		# Probably expand to do something else or some shit i dunno
-		left, right = self.left.evaluate(scope), self.right.evaluate(scope)
+		left, right = self.left.value(scope), self.right.value(scope)
 
 		if self.op in self.ops:
 			return self.ops[self.op](left, right)
@@ -244,18 +236,21 @@ class Operation(Node):
 # TODO: Look into making literals into objects (in representation)
 class Literal(Node):
 	def __init__(self, value=None):
-		self.value = value
+		self._value = value
 
-	def evaluate(self, scope):
-		return self.value
+	def value(self, scope):
+		return self._value
 
 	def string(self, indent=0):
 		return "{}(literal '{}')\n".format(' ' * indent, self.value)
 
-# Absorbs ass sets, and propagates on get/eval
+# Acts as a context, and value. Absorbs all sets and returns itself when retrieved.
 class Null(Node):
-	def evaluate(self, scope):
+	def value(self, scope):
 		return self
+
+	def assign(self, value, scope):
+		pass
 
 	def get(self, name):
 		return self
@@ -265,3 +260,6 @@ class Null(Node):
 
 	def string(self, indent=0):
 		return  ' '*indent+'(null)';
+
+	def __bool__(self):
+		return False

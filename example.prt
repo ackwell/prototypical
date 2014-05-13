@@ -1,35 +1,20 @@
 
-a().b().c()
+a = 1;
 
+F = {
+	a = 2;
+};
+f = F();
 
-# (body
-# 	(assign (location (identity 'val'))
-# 		(add
-# 			(number 1)
-# 			(multiply
-# 				(number 2)
-# 				(number 3)
-# 			)
-# 		)
-# 	)
-# 	(call (location (identity 'out'))
-# 		(arguments (location (identity 'val')))
-# 	)
-# )
+out(a);
+out(f.a);
 
-
-# # a totally useless function, just to say hello
-# say_hello = (to) {
-# 	out('hello, ' + to + '!')
-# }
+# A = {
+# 	a = 1;
+# };
 # 
-# say_hello('world')
-
-# |cloned.thing|.value
-# (location
-# 	(clone
-# 		(identity 'cloned')
-# 		(identity 'thing')
-# 	)
-# 	(identity 'value')
-# )
+# B = {
+# 	b = chain.a;
+# };
+# 
+# out(A().B().b);
