@@ -176,8 +176,16 @@ class Parser(object):
 
 		# Number
 		if key == 'number':
-			node = nodes.Literal(float(self._token.val))
+			num = self._token.val
 			self._next()
+			# Check if it's a float
+			if self._peek() == '.':
+				self._next()
+				if self._peek() == 'number':
+					num += '.' + self._token.val
+					self._next()
+			node = nodes.Literal(float(num))
+
 			return node
 
 		# String
