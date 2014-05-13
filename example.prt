@@ -1,12 +1,5 @@
 
-a = {
-};
-
-b = {
-	result = 10;
-};
-
-out(a().b().result)
+out(p.q.r);
 
 
 # (body

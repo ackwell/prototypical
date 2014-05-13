@@ -94,7 +94,7 @@ class Location(Group):
 		for identity in self._items[:-1]:
 			scope = identity.evaluate(scope)
 			if scope == None:
-				raise AttributeError() # TODO: Expand with more info
+				return Null()
 		return scope
 
 class Clone(Location):
@@ -251,3 +251,17 @@ class Literal(Node):
 
 	def string(self, indent=0):
 		return "{}(literal '{}')\n".format(' ' * indent, self.value)
+
+# Absorbs ass sets, and propagates on get/eval
+class Null(Node):
+	def evaluate(self, scope):
+		return self
+
+	def get(self, name):
+		return self
+
+	def set(self, name, value):
+		pass
+
+	def string(self, indent=0):
+		return  ' '*indent+'(null)';
