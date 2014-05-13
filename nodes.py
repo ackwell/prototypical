@@ -116,6 +116,7 @@ class Clone(Location):
 		]
 		return ''.join(string)
 
+# Idenities (inc. calls)
 class Identity(Node):
 	def __init__(self, name=''):
 		self.name = name
@@ -132,6 +133,30 @@ class Identity(Node):
 	def string(self, indent=0):
 		return "{}(identity '{}')\n".format(' ' * indent, self.name)
 
+class Call(Group):
+	def __init__(self, location=None, arguments=None):
+		super().__init__(arguments)
+		self.location = location
+
+	def get(self, scope):
+		return self.evaluate(scope)
+
+	def evaluate(self, scope):
+		# Evaluate the arguments
+		arguments = list(map(lambda i: i.evaluate(scope), self._items))
+
+		# Get the function and call it
+		function = self.location.get(scope)
+		return function.call(arguments)
+
+	def string(self, indent=0):
+		string = [' ' * indent, '(call\n',
+			self.location.string(indent + 1),
+			self._string_items(indent + 1),
+			' ' * indent, ')\n'
+		]
+		return ''.join(string)
+
 # Expressions
 class Assign(Node):
 	def __init__(self, location=None, formula=None):
@@ -147,27 +172,6 @@ class Assign(Node):
 		string = [' ' * indent, '(assign\n',
 			self.location.string(indent + 1),
 			self.formula.string(indent + 1),
-			' ' * indent, ')\n'
-		]
-		return ''.join(string)
-
-class Call(Group):
-	def __init__(self, location=None, arguments=None):
-		super().__init__(arguments)
-		self.location = location
-
-	def evaluate(self, scope):
-		# Evaluate the arguments
-		arguments = list(map(lambda i: i.evaluate(scope), self._items))
-
-		# Get the function and call it
-		function = self.location.get(scope)
-		return function.call(arguments)
-
-	def string(self, indent=0):
-		string = [' ' * indent, '(call\n',
-			self.location.string(indent + 1),
-			self._string_items(indent + 1),
 			' ' * indent, ')\n'
 		]
 		return ''.join(string)

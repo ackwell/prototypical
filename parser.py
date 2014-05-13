@@ -34,16 +34,12 @@ class Parser(object):
 
 	def _parse_expression(self):
 		"expression = (assign | function_call), ';';"
-		location = self._parse_location()
-		expression = None
+		expression = self._parse_location()
 
-		# Next token is '(', it's a function call
-		if self._peek() == '(':
-			expression = self._parse_call(location)
-
-		# Otherwise, it's an assignment
-		else:
-			expression = self._parse_assign(location)
+		# Assignment
+		t = self._peek()
+		if t == 'compound assignment' or t == '=':
+			expression = self._parse_assign(expression)
 
 		# TODO: Catch expression is None and peek != ';'
 		# Consume ';'
@@ -66,9 +62,16 @@ class Parser(object):
 		# TODO: Error handle when no iden
 
 		while self._peek() == 'identifier':
-			location.add(nodes.Identity(self._token.val))
-			# If next token isn't '.', break out
+			iden = nodes.Identity(self._token.val)
 			self._next()
+
+			# Iden is actually call.
+			if self._peek() == '(':
+				iden = self._parse_call(iden)
+
+			location.add(iden)
+
+			# If the next token isn't a '.', end of location
 			if self._peek() != '.':
 				break
 			# Consume the '.'
@@ -76,15 +79,15 @@ class Parser(object):
 
 		return location
 
-	def _parse_call(self, location=None):
-		"call = location, '(', [formula, {',', formula}], ')';"
-		if location is None:
-			location = self._parse_location()
+	def _parse_call(self, identifier=None):
+		"call = identifier, '(', [formula, {',', formula}], ')';"
+		if identifier is None:
+			identifier = self._parse_location()
 
 		# TODO: ensure next tok is '('
 		self._next()
 
-		call = nodes.Call(location)
+		call = nodes.Call(identifier)
 
 		if self._peek() != ')':
 			call.add(self._parse_formula())
@@ -98,11 +101,6 @@ class Parser(object):
 			raise SyntaxError
 
 		self._next()
-
-		# If the next token is a '.', need to transform into a location
-		if self._peek() == '.':
-			self._next()
-			call = self._parse_location([call])
 
 		return call
 
@@ -291,6 +289,7 @@ if __name__ == '__main__':
 	source = open('example.prt', 'r', encoding='utf-8').read()
 	parser = Parser(source)
 	root = parser()
+
 	root.add_parent(Library())
 	result = root()._context
 	print('result:', result)
