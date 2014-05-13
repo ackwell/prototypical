@@ -47,7 +47,7 @@ class Body(Group):
 			self._context.update(arguments)
 
 		for expression in self._items:
-			expression.evaluate(self)
+			expression.execute(self)
 		return self
 	__call__ = call
 
@@ -77,12 +77,12 @@ class Body(Group):
 
 # Location
 class Location(Group):
-	def evaluate(self, scope):
-		return self.value(scope)
+	def execute(self, scope):
+		return self.evaluate(scope)
 
-	def value(self, scope):
+	def evaluate(self, scope):
 		scope = self._lookup_parent(scope)
-		return self._items[-1].value(scope)
+		return self._items[-1].evaluate(scope)
 
 	def assign(self, value, scope):
 		scope = self._lookup_parent(scope)
@@ -90,7 +90,7 @@ class Location(Group):
 
 	def _lookup_parent(self, scope):
 		for identity in self._items[:-1]:
-			scope = identity.value(scope)
+			scope = identity.evaluate(scope)
 			if scope == None:
 				return Null()
 		return scope
@@ -99,8 +99,8 @@ class Clone(Location):
 	def __init__(self, location=None):
 		self.location = location
 
-	def value(self, scope):
-		return copy.deepcopy(self.location.value(scope))
+	def evaluate(self, scope):
+		return copy.deepcopy(self.location.evaluate(scope))
 
 	def assign(self, value, scope):
 		# Setting on a clone serves no purpose.
@@ -119,7 +119,7 @@ class Identity(Node):
 	def __init__(self, name=''):
 		self.name = name
 
-	def value(self, scope):
+	def evaluate(self, scope):
 		return scope.get(self.name)
 
 	def assign(self, value, scope):
@@ -133,12 +133,12 @@ class Call(Group):
 		super().__init__(arguments)
 		self.location = location
 
-	def value(self, scope):
+	def evaluate(self, scope):
 		# Evaluate the arguments
-		arguments = list(map(lambda i: i.value(scope), self._items))
+		arguments = list(map(lambda i: i.evaluate(scope), self._items))
 
 		# Get the function and call it
-		function = self.location.value(scope)
+		function = self.location.evaluate(scope)
 		return function.call(arguments)
 
 	def string(self, indent=0):
@@ -155,9 +155,9 @@ class Assign(Node):
 		self.location = location
 		self.formula = formula
 
-	def evaluate(self, scope):
+	def execute(self, scope):
 		# Need to have scope, so let python chuck a hissy if none is passed
-		result = self.formula.value(scope)
+		result = self.formula.evaluate(scope)
 		self.location.assign(result, scope)
 
 	def string(self, indent=0):
@@ -173,7 +173,7 @@ class Definition(Group):
 		super().__init__(parameters)
 		self.body = body
 
-	def value(self, scope):
+	def evaluate(self, scope):
 		# Not being run, just assigned. The scope passed is that of the parent,
 		# so add it to the body
 		self.body.add_parent(scope)
@@ -217,9 +217,9 @@ class Operation(Node):
 			'!=': operator.ne
 		}
 
-	def value(self, scope):
+	def evaluate(self, scope):
 		# Probably expand to do something else or some shit i dunno
-		left, right = self.left.value(scope), self.right.value(scope)
+		left, right = self.left.evaluate(scope), self.right.evaluate(scope)
 
 		if self.op in self.ops:
 			return self.ops[self.op](left, right)
@@ -236,17 +236,17 @@ class Operation(Node):
 # TODO: Look into making literals into objects (in representation)
 class Literal(Node):
 	def __init__(self, value=None):
-		self._value = value
+		self.value = value
 
-	def value(self, scope):
-		return self._value
+	def evaluate(self, scope):
+		return self.value
 
 	def string(self, indent=0):
 		return "{}(literal '{}')\n".format(' ' * indent, self.value)
 
 # Acts as a context, and value. Absorbs all sets and returns itself when retrieved.
 class Null(Node):
-	def value(self, scope):
+	def evaluate(self, scope):
 		return self
 
 	def assign(self, value, scope):
