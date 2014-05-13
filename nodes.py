@@ -51,29 +51,38 @@ class Body(Group):
 		return self
 	__call__ = call
 
-	def get(self, name):
-		if name in self._context:
-			return self._context[name]
+	def get(self, name, limiter=''):
+		if 'self' in limiter:
+			if name in self._context:
+				return self._context[name]
 
-		for parent in self._parents:
-			result = parent.get(name)
-			if result:
-				return result
+		if 'parent' in limiter:
+			for parent in self._parents:
+				result = parent.get(name)
+				if result:
+					return result
 
-	def set(self, name, value):
+	def set(self, name, value, limiter=''):
 		# Check local scope first
-		if name in self._context:
+		if 'self' in limiter and name in self._context:
 			self._context[name] = value
 			return
 
 		# Wasn't local, check parents
-		for parent in self._parents:
-			if parent.get(name):
-				parent.set(name, value)
-				return
+		if 'parent' in limiter:
+			for parent in self._parents:
+				if parent.get(name):
+					parent.set(name, value)
+					return
 
 		# Wasn't in a parent either, set new var locally
-		self._context[name] = value
+		if 'self' in limiter:
+			self._context[name] = value
+			return
+
+		# Limiter excluding self, but nothing found. Raise error.
+		print(name, '->'+limiter+'<-')
+		raise AttributeError() # TODO: more info
 
 # Location
 class Location(Group):
@@ -118,12 +127,25 @@ class Clone(Location):
 class Identity(Node):
 	def __init__(self, name=''):
 		self.name = name
+		self.limiters = {
+			'@': 'self',
+			'^': 'parent',
+			'default': 'self parent'
+		}
 
 	def evaluate(self, scope):
-		return scope.get(self.name)
+		name, limiter = self._find_limiter()
+		return scope.get(name, limiter)
 
 	def assign(self, value, scope):
-		return scope.set(self.name, value)
+		name, limiter = self._find_limiter()
+		return scope.set(name, value, limiter)
+
+	def _find_limiter(self):
+		prefix = self.name[0]
+		if prefix in self.limiters:
+			return self.name[1:], self.limiters[prefix]
+		return self.name, self.limiters['default']
 
 	def string(self, indent=0):
 		return "{}(identity '{}')\n".format(' ' * indent, self.name)
@@ -252,10 +274,10 @@ class Null(Node):
 	def assign(self, value, scope):
 		pass
 
-	def get(self, name):
+	def get(self, name, limiter=''):
 		return self
 
-	def set(self, name, value):
+	def set(self, name, value, limiter=''):
 		pass
 
 	def string(self, indent=0):

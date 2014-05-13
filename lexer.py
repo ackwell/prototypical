@@ -47,7 +47,8 @@ class Lexer(object):
 			'.', ',',
 			'(', ')',
 			'{', '}',
-			'@', '^', '!', '|',
+			'!',
+			'|',
 			'+', '-', '*', '/', '%',
 			'=',
 			';'
@@ -130,9 +131,9 @@ class Lexer(object):
 
 	def _check_identifier(self):
 		char = self._peek()
-		if char == '_' or char.isalpha():
+		if char in '_@^' or char.isalpha():
 			pos = self._pos
-			identifier = self._get_while(lambda c: c == '_' or c.isalnum())
+			identifier = self._get_while(lambda c: c in '_@^' or c.isalnum())
 			if identifier in self._keywords:
 				return Token(pos, identifier, identifier)
 			return Token(pos, 'identifier', identifier)
