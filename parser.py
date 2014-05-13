@@ -33,7 +33,7 @@ class Parser(object):
 		return body
 
 	def _parse_expression(self):
-		"expression = (assign | function_call), ';';"
+		"expression = location, [assign];"
 		expression = self._parse_location()
 
 		# Assignment
@@ -41,13 +41,18 @@ class Parser(object):
 		if t == 'compound assignment' or t == '=':
 			expression = self._parse_assign(expression)
 
-		# TODO: Catch expression is None and peek != ';'
+		if self._peek() != ';':
+			raise SyntaxError() # TODO: more info
+
 		# Consume ';'
 		self._next()
 		return expression
 
 	def _parse_location(self, identifiers=None):
-		"location = [clone, '.'], identifier, {'.', identifier};"
+		"""
+		location = [clone, '.'], (identifier | call), {'.', (identifier | call)};
+		clone = '|', location, '|';
+		"""
 		location = nodes.Location(identifiers)
 
 		# If first token is '|', parse the clone first
@@ -105,7 +110,7 @@ class Parser(object):
 		return call
 
 	def _parse_assign(self, location=None):
-		"assign = location, ('=' | compound_assignment), formula;"
+		"assign = ('=' | compound_assignment), formula;"
 		if location is None:
 			location = self._parse_location()
 
