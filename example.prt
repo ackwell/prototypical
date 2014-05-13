@@ -1,5 +1,5 @@
 
-out(p.q.r);
+a().b().c()
 
 
 # (body
