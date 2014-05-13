@@ -58,7 +58,7 @@ class Body(Group):
 
 		if 'parent' in limiter:
 			for parent in self._parents:
-				result = parent.get(name)
+				result = parent.get(name, limiter)
 				if result:
 					return result
 
@@ -71,8 +71,8 @@ class Body(Group):
 		# Wasn't local, check parents
 		if 'parent' in limiter:
 			for parent in self._parents:
-				if parent.get(name):
-					parent.set(name, value)
+				if parent.get(name, limiter):
+					parent.set(name, value, limiter)
 					return
 
 		# Wasn't in a parent either, set new var locally

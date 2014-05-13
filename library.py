@@ -21,10 +21,13 @@ def definition(function):
 	return wrapper()
 
 class Library(object):
-	def get(self, name):
+	def get(self, name, limiter=''):
 		name = '_func_' + name
 		if hasattr(self, name):
 			return getattr(self, name)
+
+	def set(self, name, value, limiter):
+		raise SyntaxError() # TODO: more info, can't have them overriding builtins
 
 	@definition
 	def _func_in(args):
@@ -34,6 +37,3 @@ class Library(object):
 	@definition
 	def _func_out(args):
 		print(*args)
-
-	def set(self, name, value):
-		raise SyntaxError() # TODO: more info, can't have them overriding builtins
