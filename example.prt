@@ -1,13 +1,5 @@
 
-A = {
-	a = 1;
-};
-
-B = {
-	b = chain.a;
-};
-
-out(A().B().b);
+out(in('prompt: ').result);
 
 # A = {
 # 	a = 1;

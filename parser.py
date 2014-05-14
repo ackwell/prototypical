@@ -17,15 +17,15 @@ class Parser(object):
 
 	def parse(self):
 		# The body of a document is treated as a function
-		return self._parse_body('eof')
+		return nodes.Definition([], self._parse_body('eof'))
 	__call__ = parse
 
 	def _parse_body(self, end='}'):
 		"body = {expression};"
-		body = nodes.Body()
+		body = []
 		# Capture expressions until we reach end
 		while self._peek() != end:
-			body.add(self._parse_expression())
+			body.append(self._parse_expression())
 
 		# Eat end
 		self._next()
@@ -124,7 +124,7 @@ class Parser(object):
 
 		# Should be an assignment, throw hissy
 		elif self._peek() != '=':
-			...
+			raise SyntaxError() # TODO: more info
 
 		# Eat assignment operator
 		self._next()
@@ -302,12 +302,12 @@ if __name__ == '__main__':
 	source = open('example.prt', 'r', encoding='utf-8').read()
 	parser = Parser(source)
 	root = parser()
-
 	root.add_parent(Library())
-	result = root()._context
+
+	result = root([])._context
 	print('result:', result)
 
-	# print(root)
+	# __import__('pprint').pprint(root)
 
 	# l = Lexer(source)
 	# n = l.next()

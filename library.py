@@ -1,11 +1,11 @@
 
 import functools
-import nodes
+import objects
 
 def definition(function):
 	# Actually takes the place of a Definition node, but
 	# this handles all of that extra stuff anyway.
-	class wrapper(nodes.Body):
+	class wrapper(objects.Body):
 		@functools.wraps(function)
 		def call(self, args):
 			self._context['result'] = function(self, *args)

@@ -1,6 +1,7 @@
 
 import copy
 import operator
+import objects
 
 # Base Classes
 class Node(object):
@@ -43,62 +44,6 @@ class Namespace(object):
 
 	def set(self, name, value, limiter=''):
 		# Can't override a namespace, soz
-		raise AttributeError() # TODO: more info
-
-# Core
-class Body(Group):
-	def __init__(self, expressions=None):
-		super().__init__(expressions)
-
-		self._parents = []
-		self._context = {}
-
-	def add_parent(self, parent):
-		self._parents.append(parent)
-
-	def call(self, arguments=None):
-		# Arguments (if passed) will be {name: value} that should be added to context
-		if arguments:
-			self._context.update(arguments)
-
-		for expression in self._items:
-			expression.execute(self)
-		return self
-	__call__ = call
-
-	def get(self, name, limiter=''):
-		if 'self' in limiter:
-			if name in self._context:
-				return self._context[name]
-
-		if 'parent' in limiter:
-			for parent in self._parents:
-				result = parent.get(name, limiter)
-				if result:
-					return result
-
-		# Nothing found, null it
-		return Null()
-
-	def set(self, name, value, limiter=''):
-		# Check local scope first
-		if 'self' in limiter and name in self._context:
-			self._context[name] = value
-			return
-
-		# Wasn't local, check parents
-		if 'parent' in limiter:
-			for parent in self._parents:
-				if parent.get(name, limiter):
-					parent.set(name, value, limiter)
-					return
-
-		# Wasn't in a parent either, set new var locally
-		if 'self' in limiter:
-			self._context[name] = value
-			return
-
-		# Limiter excluding self, but nothing found. Raise error.
 		raise AttributeError() # TODO: more info
 
 # Location
@@ -178,7 +123,6 @@ class Call(Group):
 
 		# Get the function, add the calling scope as 'chain', and call it
 		function = self.location.evaluate(scope)
-		function.add_parent(Namespace('chain', scope))
 		return function.call(arguments)
 
 	def string(self, indent=0):
@@ -213,13 +157,15 @@ class Definition(Group):
 		super().__init__(parameters)
 		self.body = body
 
+		self._parents = []
+
 	def add_parent(self, parent):
-		self.body.add_parent(parent)
+		self._parents.append(parent)
 
 	def evaluate(self, scope):
 		# Not being run, just assigned. The scope passed is that of the parent,
 		# so add it to the body
-		self.body.add_parent(scope)
+		self._parents.append(scope)
 		return self
 
 	def call(self, arguments):
@@ -229,7 +175,9 @@ class Definition(Group):
 			raise TypeError() # TODO: More info
 
 		arguments = dict(zip(map(lambda i: i.name, self._items), arguments))
-		return self.body.call(arguments)
+		func = objects.Body(self.body, self._parents)
+		return func.call(arguments)
+	__call__ = call
 
 	def string(self, indent=0):
 		string = [' ' * indent, '(definition\n',
@@ -286,23 +234,3 @@ class Literal(Node):
 
 	def string(self, indent=0):
 		return "{}(literal '{}')\n".format(' ' * indent, self.value)
-
-# Acts as a context, and value. Absorbs all sets and returns itself when retrieved.
-class Null(Node):
-	def evaluate(self, scope):
-		return self
-
-	def assign(self, value, scope):
-		pass
-
-	def get(self, name, limiter=''):
-		return self
-
-	def set(self, name, value, limiter=''):
-		pass
-
-	def string(self, indent=0):
-		return  ' '*indent+'(null)';
-
-	def __bool__(self):
-		return False
