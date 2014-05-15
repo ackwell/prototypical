@@ -7,26 +7,39 @@ class Function(object):
 		self._expressions = expressions
 		self._parameters = parameters
 		self._parents = []
+		self._defaults = {}
 
 	def add_parent(self, parent):
 		self._parents.append(parent)
 
-	def call(self, arguments=None, scope=None):
+	def add_defaults(self, defaults):
+		self._defaults.update(defaults)
+
+	def call(self, arguments=None, scope=None, context=None):
 		if arguments is None:
 			arguments = []
 
-		arg_map = dict(zip(map(lambda i: i.name, self._parameters), arguments))
-
-		parents = list(self._parents)
-		if scope:
-			parents.append(Namespace('scope', scope))
-
-		context = Context(arg_map, parents)
+		# Seperate function so that children may use.
+		if context is None:
+			context = self.initiate_context(arguments, scope)
 
 		for expression in self._expressions:
 			expression.execute(context)
 		return context
 	__call__ = call
+
+	def initiate_context(self, arguments=None, scope=None):
+		# Copy, so as to avoid tainting the defaults for next call
+		defaults = self._defaults.copy()
+		if arguments is not None:
+			arg_map = dict(zip(map(lambda i: i.name, self._parameters), arguments))
+			defaults.update(arg_map)
+
+		parents = list(self._parents)
+		if scope is not None:
+			parents.append(Namespace('scope', scope))
+
+		return Context(defaults, parents)
 
 # Special context used to limit values to a namespace
 class Namespace(object):
@@ -36,7 +49,7 @@ class Namespace(object):
 
 	def get(self, name, limiter=''):
 		if name == self._name:
-			return self._child
+			return self._value
 		return Null()
 
 	def set(self, name, value, limiter=''):
@@ -53,7 +66,7 @@ class Context(object):
 		self._values = values
 		self._parents = parents
 
-	def get(self, name, limiter=''):
+	def get(self, name, limiter='self'):
 		if 'self' in limiter:
 			if name in self._values:
 				return self._values[name]
@@ -67,7 +80,7 @@ class Context(object):
 		# Nothing found, null it
 		return Null()
 
-	def set(self, name, value, limiter=''):
+	def set(self, name, value, limiter='self'):
 		# Check local scope first
 		if 'self' in limiter and name in self._values:
 			self._values[name] = value

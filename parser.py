@@ -298,17 +298,21 @@ class Parser(object):
 
 
 # TEMP: driver because fuck you too windows
-# from library import Library
+from library import Library
 if __name__ == '__main__':
 	source = open('example.prt', 'r', encoding='utf-8').read()
 	parser = Parser(source)
 	root = parser()
 
-	result = root()
+	library = Library()
 
-	# body.add_context(Library().get_context(body))
+	root.add_defaults(library.get_context())
+	context = root.initiate_context()
+	library.set_parents(context)
 
-	print('result:', result._values)
+	result = root(context=context)
+
+	__import__('pprint').pprint(result._values)
 
 	# __import__('pprint').pprint(root)
 

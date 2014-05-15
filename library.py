@@ -3,29 +3,31 @@ import functools
 import objects
 
 def definition(function):
-	# Actually takes the place of a Function object as well, but
-	# this handles all of that extra stuff anyway.
-	class wrapper(objects.Body):
+	class wrapper(objects.Function):
 		@functools.wraps(function)
-		def call(self, args):
-			self._context['result'] = function(self, *args)
-			return self
-
-		def __str__(self):
-			return str(function)
-
-	# TODO: perhaps wrap further to gen new body objects on the fly
-	return wrapper()
+		def call(self, args, scope):
+			# Args are going to be passed directly to function, so ignore from context
+			context = self.initiate_context([], scope)
+			result = function(context, *args)
+			context.set('result', result)
+			return context
+	return wrapper([])
 
 class Library(object):
-	def get_context(self, scope):
+	def get_context(self):
 		context = {}
+		for name, func in self.functions():
+			context[name] = func
+		return context
+
+	def set_parents(self, parent):
+		for _, func in self.functions():
+			func.add_parent(parent)
+
+	def functions(self):
 		for member in dir(self):
 			if member.startswith('_func_'):
-				func = getattr(self, member)
-				func.add_parent(scope)
-				context[member[6:]] = func
-		return context
+				yield member[6:], getattr(self, member)
 
 	@definition
 	def _func_in(func, *args):
@@ -44,7 +46,8 @@ class Library(object):
 
 	@definition
 	def _func_else(func, callback):
-		if func.get('scope', 'parent').get('result', 'self parent'):
+		test = func.get('scope', 'parent').get('result', 'self parent')
+		if test:
 			# Previous chain has was truthy, so cop out here
 			return
 		callback.call([]);
