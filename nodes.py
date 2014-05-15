@@ -106,10 +106,9 @@ class Call(Group):
 		# Evaluate the arguments
 		arguments = list(map(lambda i: i.evaluate(scope), self._items))
 
-		# Get the function, and call it
 		function = self.location.evaluate(scope)
-		function.add_parent(objects.Namespace('scope', scope))
-		return function.call(arguments)
+		context = function.call(arguments, scope)
+		return context
 
 	def string(self, indent=0):
 		string = [' ' * indent, '(call\n',
@@ -139,21 +138,15 @@ class Assign(Node):
 		return ''.join(string)
 
 class Definition(Group):
-	def __init__(self, parameters=None, body=None):
+	def __init__(self, parameters=None, expressions=None):
 		super().__init__(parameters)
-		self.body = body
+		self._expressions = expressions
 
-		self._parents = []
-
-	def add_parent(self, parent):
-		self._parents.append(parent)
-
-	def evaluate(self, scope=None):
-		# Not being run, just assigned. The scope passed is that of the parent,
-		# so add it to the body
-		if scope:
-			self._parents.append(scope)
-		return objects.Function(self.body, self._items, self._parents)
+	def evaluate(self, scope):
+		# Generate a function object, and assign scope
+		function = objects.Function(self._expressions, self._items)
+		function.add_parent(scope)
+		return function
 
 	def string(self, indent=0):
 		string = [' ' * indent, '(definition\n',

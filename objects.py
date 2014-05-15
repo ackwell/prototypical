@@ -1,34 +1,38 @@
 # Core
-
-# Function value
 class Function(object):
-	def __init__(self, body, parameters, parents):
-		self.body = body
-		self._items = parameters
-		self._parents = parents
-		self._context = {}
+	def __init__(self, expressions, parameters=None):
+		if parameters is None:
+			parameters = []
 
-	def call(self, arguments):
-		# This time, it's actually being called. Map args and pass to body
-		# TODO: Default args, possible named params
-		if len(arguments) != len(self._items):
-			raise TypeError() # TODO: more info
+		self._expressions = expressions
+		self._parameters = parameters
+		self._parents = []
 
-		arguments = dict(zip(map(lambda i: i.name, self._items), arguments))
-		arguments.update(self._context)
+	def add_parent(self, parent):
+		self._parents.append(parent)
 
-		func = self.get_body()
-		return func.call(arguments)
+	def call(self, arguments=None, scope=None):
+		if arguments is None:
+			arguments = []
 
-	def get_body(self):
-		# What am i doing even i don't know any more.
-		return Body(self.body, self._parents)
+		arg_map = dict(zip(map(lambda i: i.name, self._parameters), arguments))
 
-# Seriously hacky shit used by nodes to fake a scope
+		parents = list(self._parents)
+		if scope:
+			parents.append(Namespace('scope', scope))
+
+		context = Context(arg_map, parents)
+
+		for expression in self._expressions:
+			expression.execute(context)
+		return context
+	__call__ = call
+
+# Special context used to limit values to a namespace
 class Namespace(object):
-	def __init__(self, name, child):
+	def __init__(self, name, value):
 		self._name = name
-		self._child = child
+		self._value = value
 
 	def get(self, name, limiter=''):
 		if name == self._name:
@@ -39,38 +43,20 @@ class Namespace(object):
 		# Can't override a namespace, soz
 		raise AttributeError() # TODO: more info
 
-# Object formed by a called function
-class Body(object):
-	def __init__(self, expressions=None, parents=None):
-		if expressions is None:
-			expressions = []
+class Context(object):
+	def __init__(self, values=None, parents=None):
+		if values is None:
+			values = {}
 		if parents is None:
 			parents = []
 
-		self._items = expressions
+		self._values = values
 		self._parents = parents
-		self._context = {}
-
-	def add_parent(self, parent):
-		self._parents.append(parent)
-
-	def add_context(self, context):
-		self._context.update(context)
-
-	def call(self, arguments=None):
-		# Arguments (if passed) will be {name: value} that should be added to context
-		if arguments:
-			self._context.update(arguments)
-
-		for expression in self._items:
-			expression.execute(self)
-		return self
-	__call__ = call
 
 	def get(self, name, limiter=''):
 		if 'self' in limiter:
-			if name in self._context:
-				return self._context[name]
+			if name in self._values:
+				return self._values[name]
 
 		if 'parent' in limiter:
 			for parent in self._parents:
@@ -83,8 +69,8 @@ class Body(object):
 
 	def set(self, name, value, limiter=''):
 		# Check local scope first
-		if 'self' in limiter and name in self._context:
-			self._context[name] = value
+		if 'self' in limiter and name in self._values:
+			self._values[name] = value
 			return
 
 		# Wasn't local, check parents
@@ -96,7 +82,7 @@ class Body(object):
 
 		# Wasn't in a parent either, set new var locally
 		if 'self' in limiter:
-			self._context[name] = value
+			self._values[name] = value
 			return
 
 		# Limiter excluding self, but nothing found. Raise error.

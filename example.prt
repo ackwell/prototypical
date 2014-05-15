@@ -1,11 +1,30 @@
 
-a = 1;
+A = {
+	a = 1;
+};
 
-if(a == 1, {
-	out('a is 1');
-}).else({
-	out('a is not 1');
-});
+test = A();
+
+test2 = test.a;
+
+## I still havn't added true/false keywords because lazy, so using
+## comparisons to simulate
+#
+#returnsTrue = {
+#	result = 1 == 1;
+#};
+#
+#returnsFalse = {
+#	result = 1 == 2;
+#};
+#
+#returnsTrue().else({
+#	out('returnsTrue');
+#});
+#
+#returnsFalse().else({
+#	out('returnsFalse');
+#});
 
 
 # A = {

@@ -1,6 +1,7 @@
 
 from lexer import Lexer
 import nodes
+import objects
 
 class Parser(object):
 	def __init__(self, source):
@@ -17,7 +18,7 @@ class Parser(object):
 
 	def parse(self):
 		# The body of a document is treated as a function
-		return nodes.Definition([], self._parse_body('eof'))
+		return objects.Function(self._parse_body('eof'))
 	__call__ = parse
 
 	def _parse_body(self, end='}'):
@@ -297,16 +298,17 @@ class Parser(object):
 
 
 # TEMP: driver because fuck you too windows
-from library import Library
+# from library import Library
 if __name__ == '__main__':
 	source = open('example.prt', 'r', encoding='utf-8').read()
 	parser = Parser(source)
 	root = parser()
-	body = root.evaluate().get_body()
-	body.add_context(Library().get_context(body))
 
-	result = body()._context
-	print('result:', result)
+	result = root()
+
+	# body.add_context(Library().get_context(body))
+
+	print('result:', result._values)
 
 	# __import__('pprint').pprint(root)
 
