@@ -31,21 +31,6 @@ class Group(Node):
 			string.append(item.string(indent))
 		return ''.join(string)
 
-# Seriously hacky shit used by other nodes to fake scopes
-class Namespace(object):
-	def __init__(self, name, child):
-		self._name = name
-		self._child = child
-
-	def get(self, name, limiter=''):
-		if name == self._name:
-			return self._child
-		return Null()
-
-	def set(self, name, value, limiter=''):
-		# Can't override a namespace, soz
-		raise AttributeError() # TODO: more info
-
 # Location
 class Location(Group):
 	def execute(self, scope):
@@ -121,8 +106,9 @@ class Call(Group):
 		# Evaluate the arguments
 		arguments = list(map(lambda i: i.evaluate(scope), self._items))
 
-		# Get the function, add the calling scope as 'chain', and call it
+		# Get the function, and call it
 		function = self.location.evaluate(scope)
+		function.add_parent(objects.Namespace('scope', scope))
 		return function.call(arguments)
 
 	def string(self, indent=0):
@@ -162,22 +148,12 @@ class Definition(Group):
 	def add_parent(self, parent):
 		self._parents.append(parent)
 
-	def evaluate(self, scope):
+	def evaluate(self, scope=None):
 		# Not being run, just assigned. The scope passed is that of the parent,
 		# so add it to the body
-		self._parents.append(scope)
-		return self
-
-	def call(self, arguments):
-		# This time, it's actually being called. Map args and pass to body
-		# TODO: Default args, possible named params
-		if len(arguments) != len(self._items):
-			raise TypeError() # TODO: More info
-
-		arguments = dict(zip(map(lambda i: i.name, self._items), arguments))
-		func = objects.Body(self.body, self._parents)
-		return func.call(arguments)
-	__call__ = call
+		if scope:
+			self._parents.append(scope)
+		return objects.Function(self.body, self._items, self._parents)
 
 	def string(self, indent=0):
 		string = [' ' * indent, '(definition\n',

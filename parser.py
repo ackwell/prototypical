@@ -302,9 +302,10 @@ if __name__ == '__main__':
 	source = open('example.prt', 'r', encoding='utf-8').read()
 	parser = Parser(source)
 	root = parser()
-	root.add_parent(Library())
+	body = root.evaluate().get_body()
+	body.add_context(Library().get_context(body))
 
-	result = root([])._context
+	result = body()._context
 	print('result:', result)
 
 	# __import__('pprint').pprint(root)

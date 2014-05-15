@@ -55,10 +55,6 @@ class Lexer(object):
 		]
 
 		self._keywords = [
-			'if',
-			'else',
-			'for',
-			'while'
 		]
 
 	# So that the caller can rewind/fast forward to a position
