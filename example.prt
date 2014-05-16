@@ -1,4 +1,5 @@
 
+# Direct inheritance of scope
 Parent1 = {
 	p1 = 'p1';
 	Child1 = {
@@ -8,6 +9,7 @@ Parent1 = {
 
 out('1:', Parent1().Child1().c1);
 
+# Injected inheritance of scope
 Parent2 = {
 	p2 = 'p2';
 };
@@ -20,12 +22,13 @@ Parent2() -> Child2;
 
 out('2:', Child2().c2);
 
-# A = {
-# 	a = 1;
-# };
-# 
-# B = {
-# 	b = chain.a;
-# };
-# 
-# out(A().B().b);
+# Chained scope
+A = {
+	a = 1;
+};
+
+B = {
+	b = scope.a;
+};
+
+out('3:', A().B().b);
