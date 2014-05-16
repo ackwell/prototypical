@@ -1,34 +1,81 @@
+# Assign `num` the value 10.0 (all numbers are floats)
+num = 10;
 
-# Direct inheritance of scope
-Parent1 = {
-	p1 = 'p1';
-	Child1 = {
-		c1 = p1;
+# Assign `str` a string value
+str = 'hello world';
+
+# out()/in() are the IO functions. Same arguments as python's print()/input()
+out('hello, world');
+# > hello, world
+
+# Mathematical operations are inherited from python (at least currently)
+out(5 - 4);
+# > 1.0
+out('hello, ' + 'world');
+# > hello, world
+
+# Define a function that says hello
+sayHello = (to) {
+	out('hello,', to);
+};
+sayHello('world');
+# > hello, world
+
+# Functions with no args can omit the parameters
+noArgFunc = {
+	out('hi!');
+};
+noArgFunc();
+# > hi!
+
+# Everything above is pretty ordinary. Let's crank it up a notch.
+# Control flow is handled with functions
+bool = true;
+if(bool, {
+	out('this will print');
+}).else({
+	out('this will not print');
+});
+# > this will print
+
+# Functions *always* return a 'context' object, generated during their execution.
+# There is no return keyword.
+function = {
+	result = 42;
+};
+out(function().result);
+# > 42
+
+# Functions can access their calling scope through the 'scope' namespace.
+# Combined with above points, this allows functions to differ depending on how they are chained.
+falseyFunction = {
+	# It is idiomatic to call your primary result 'result'.
+	# This is followed and expected by the standard library.
+	result = false;
+};
+falseyFunction().else({
+	out('this will print!');
+});
+# > this will print!
+
+# Scope is automatically inherited in nested functions
+outer = {
+	o = 'outer';
+
+	inner = {
+		i = o;
 	};
 };
+out(outer().inner().i);
+# > outer
 
-out('1:', Parent1().Child1().c1);
-
-# Injected inheritance of scope
-Parent2 = {
-	p2 = 'p2';
+# Scope can be manually injected, even if not nested
+parent = {
+	p = 'parent';
 };
-
-Child2 = {
-	c2 = p2;
+child = {
+	c = p;
 };
-
-Parent2() -> Child2;
-
-out('2:', Child2().c2);
-
-# Chained scope
-A = {
-	a = 1;
-};
-
-B = {
-	b = scope.a;
-};
-
-out('3:', A().B().b);
+parent() -> child;
+out(child().c);
+# > parent

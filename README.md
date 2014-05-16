@@ -12,22 +12,4 @@ Syntax
 
 The syntax borrows heavily from existing languages, so most constructs should seem familiar.
 
-Rather than trying to explain each part one at a time, here's a code snippet which goes over most of the basic usage:
-
-```
-# Assign `num` the value 10.0 (all numbers are floats)
-num = 10;
-
-# Assign `str` a string value
-str = 'hello world';
-
-# out()/in() are the IO functions. Same arguments as python's print()/input()
-out('hello, world');
-# > hello, world
-
-# Mathematical operations are inherited from python (at least currently)
-out(5 - 4);
-# > 1.0
-out('hello, ' + 'world');
-# > hello, world
-```
+For a brief overview of the core concepts and syntax of the language, check out the [example code](https://github.com/ackwell/prototypical/blob/master/example.prt).
