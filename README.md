@@ -1,6 +1,8 @@
 Prototypical
 ============
 
+***This README is incomplete!***
+
 **Note:** This is a work in progress, and will be subject to change without notice. Probably without updated docs too, knowing myself.
 
 Prototypical (working name) is a dynamically typed, interpreted language. I plan to keep the language and it's syntax as simple as possible, while allowing a great deal of ~~hackery~~ flexibility for the coder.
