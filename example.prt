@@ -3,11 +3,11 @@
 # comparisons to simulate
 
 returnsTrue = {
-	result = 1 == 1;
+	result = true;
 };
 
 returnsFalse = {
-	result = 1 == 2;
+	result = false;
 };
 
 returnsTrue().else({

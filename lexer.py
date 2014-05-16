@@ -55,6 +55,9 @@ class Lexer(object):
 		]
 
 		self._keywords = [
+			'true',
+			'false',
+			'null'
 		]
 
 	# So that the caller can rewind/fast forward to a position

@@ -200,6 +200,22 @@ class Parser(object):
 			self._next()
 			return node
 
+		# Booleans
+		if key == 'true':
+			node = nodes.Literal(True)
+			self._next()
+			return node
+		if key == 'false':
+			node = nodes.Literal(False)
+			self._next()
+			return node
+
+		# Null
+		if key == 'null':
+			node = nodes.Literal(objects.Null())
+			self._next()
+			return node
+
 		# Grouping: delegate because this gon be ugly
 		if key == '(':
 			return self._parse_paren()
