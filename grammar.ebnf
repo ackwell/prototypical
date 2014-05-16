@@ -3,45 +3,46 @@
 
 body = {expression};
 
-expression = assignment | function_call;
+expression = location, [insert, assign], ';';
 
-assignment = scoped_location, ['=', value], '=', value;
+location = [clone, '.'], location_segment, {'.', location_segment};
+location_segment = identifier, [call];
+clone = '|', location, '|';
+
+identifier = ('_' | letter), {character};
+call = '(', [formula, {',', formula}], ')';
+
+insert = '->', location;
+
+assign = ('=' | compound_assignment), formula;
+compound_assignment = binary_operator, '=';
+
+formula = value, {binary_operator, value};
 
 value = number
-	| string
-	| general_location
-	| function_call
-	| function_definition;
+      | string
+      | boolean
+      | 'null'
+      | group
+      | location
+      | call
+      | unary_operation
+      | definition
+      ;
 
-(* functions *)
-function_call = general_location, arguments_list;
-arguments_list = '(', [value, {',', value}], ')';
+number = digit, {digit}, ['.', digit, {digit}];
+string = quote, {character - ? matched quote ?}, quote;
+quote = '"' | "'";
+boolean = 'true' | 'false';
+group = '(', formula, ')';
+unary_operation = unary_operator, location;
 
-function_definition = [parent_injection], [parameters_list], function_body;
-parent_injection = general_location, '->';
-parameters_list =
-	'(',
-		[identifier, {',', identifier}],
-		[identifier, '=', value, {',', identifier, '=', value}], 
-	')';  (* seperating such that default args can't be mixed in with non-default args *)
-function_body = '{', body, '}';
+definition = [parameters], '{', body, '}';
+parameters = '(', identifier, {',', identifier}, ')';
 
-(* identifiers/locations *)
-general_location = scoped_location | clone | deep_clone;
-clone = '|', scoped_location, '|';
-deep_clone = '||', scoped_location, '||'; (* probably need better syntax for this *) 
-scoped_location = ['@' | '^'], location;
-location = identifier, {'.', identifier};
-identifier = ('_' | letter), {'_' | letter | number};
+unary_operator = '!', '-';
+binary_operator = '+', '-', '*', '/';
 
-(* literals *)
-number = ['-'], {digit}, ['.', {digit}];
-string = single_quote_string | double_quote_string;
-
-single_quote_string = "'", {character - "'"}, "'";
-double_quote_string = '"', {character - '"'}, '"';
-
-(* base character types *)
-character = ? /./ ?;
-digit = ? /0-9/ ?;
-letter = ? /a-zA-Z/ ?;
+character = ? any printable character ?;
+letter = ? /[a-zA-Z]/ ?;
+digit = ? /[0-9]/ ?;
