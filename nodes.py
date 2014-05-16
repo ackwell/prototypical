@@ -137,6 +137,16 @@ class Assign(Node):
 		]
 		return ''.join(string)
 
+class Insert(Node):
+	def __init__(self, parent, child):
+		self.parent = parent
+		self.child = child
+
+	def execute(self, scope):
+		parent = self.parent.evaluate(scope)
+		child = self.child.evaluate(scope)
+		child.add_parent(parent)
+
 class Definition(Group):
 	def __init__(self, parameters=None, expressions=None):
 		super().__init__(parameters)

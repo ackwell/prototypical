@@ -42,6 +42,10 @@ class Parser(object):
 		if t == 'compound assignment' or t == '=':
 			expression = self._parse_assign(expression)
 
+		# Parent insertion
+		if self._peek() == 'insert':
+			expression = self._parse_insert(expression)
+
 		if self._peek() != ';':
 			raise SyntaxError() # TODO: more info
 
@@ -139,6 +143,19 @@ class Parser(object):
 
 		return assign
 
+	def _parse_insert(self, parent=None):
+		"insert = '->', location;"
+		if parent is None:
+			parent = self._parse_location()
+
+		if self._peek() != 'insert':
+			raise SyntaxError() # TODO: more info
+		self._next()
+
+		child = self._parse_location()
+
+		return nodes.Insert(parent, child)
+
 	def _parse_formula(self):
 		"formula = value, {operation, value};"
 		first = self._parse_value()
@@ -172,11 +189,13 @@ class Parser(object):
 	def _parse_value(self):
 		"""
 		value = number
-		        | string
-		        | group
-		        | location
-		        | call
-		        | definition;
+		      | string
+		      | boolean
+		      | null
+		      | group
+		      | location
+		      | call
+		      | definition;
 		"""
 		key = self._peek()
 

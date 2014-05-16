@@ -1,23 +1,24 @@
 
-# I still havn't added true/false keywords because lazy, so using
-# comparisons to simulate
-
-returnsTrue = {
-	result = true;
+Parent1 = {
+	p1 = 'p1';
+	Child1 = {
+		c1 = p1;
+	};
 };
 
-returnsFalse = {
-	result = false;
+out('1:', Parent1().Child1().c1);
+
+Parent2 = {
+	p2 = 'p2';
 };
 
-returnsTrue().else({
-	out('returnsTrue');
-});
+Child2 = {
+	c2 = p2;
+};
 
-returnsFalse().else({
-	out('returnsFalse');
-});
+Parent2() -> Child2;
 
+out('2:', Child2().c2);
 
 # A = {
 # 	a = 1;
