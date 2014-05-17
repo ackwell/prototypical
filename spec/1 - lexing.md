@@ -3,7 +3,7 @@ Lexing
 
 The prototypical parser expects a stream of tokens that it will then use to generate the abstract syntax tree.
 
-This file documents the process in which a source file is broken into these tokens. For more information on how these tokens are then parsed, check the [parser documentation](https://github.com/ackwell/prototypical/blob/master/spec/parsing.md).
+This file documents the process in which a source file is broken into these tokens.
 
 Tokens
 ------
