@@ -17,7 +17,9 @@ insert = '->', location;
 assign = ('=' | compound_assignment), formula;
 compound_assignment = binary_operator, '=';
 
-formula = value, {binary_operator, value};
+formula = unary_operation, {binary_operator, unary_operation};
+
+unary_operation = {unary_operator}, value;
 
 value = number
       | string
@@ -26,7 +28,6 @@ value = number
       | group
       | location
       | call
-      | unary_operation
       | definition
       ;
 
@@ -35,13 +36,12 @@ string = quote, {character - ? matched quote ?}, quote;
 quote = '"' | "'";
 boolean = 'true' | 'false';
 group = '(', formula, ')';
-unary_operation = unary_operator, location;
 
 definition = [parameters], '{', body, '}';
 parameters = '(', identifier, {',', identifier}, ')';
 
-unary_operator = '!', '-';
-binary_operator = '+', '-', '*', '/';
+unary_operator = '!' | '-';
+binary_operator = '+' | '-' | '*' | '/';
 
 character = ? any printable character ?;
 letter = ? /[a-zA-Z]/ ?;

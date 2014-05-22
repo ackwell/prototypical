@@ -10,7 +10,6 @@ class Parser(object):
 		self._next()
 
 		self._precedence = {
-			'!': 4,
 			'*': 3, '/': 3, '%': 3,
 			'+': 2, '-': 2,
 			'comparison': 1
@@ -158,7 +157,7 @@ class Parser(object):
 
 	def _parse_formula(self):
 		"formula = value, {operation, value};"
-		first = self._parse_value()
+		first = self._parse_unary()
 		return self._parse_formula_precedence(first)
 
 	def _parse_formula_precedence(self, left, last_prec=0):
@@ -176,7 +175,7 @@ class Parser(object):
 
 			self._next()
 
-			right = self._parse_value()
+			right = self._parse_unary()
 
 			next_prec = self._get_precedence(self._peek())
 			if prec < next_prec:
@@ -185,6 +184,19 @@ class Parser(object):
 			left = nodes.Operation(op, left, right)
 
 		return left
+
+	def _parse_unary(self):
+		"""
+		unary_operation = {unary_operator}, value;
+		unary_operator = '!' | '-';
+		"""
+		key = self._peek()
+
+		if key not in '!-':
+			return self._parse_value()
+
+		self._next()
+		return nodes.Unary(key, self._parse_unary())
 
 	def _parse_value(self):
 		"""

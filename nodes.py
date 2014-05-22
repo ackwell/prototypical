@@ -167,6 +167,23 @@ class Definition(Group):
 		return ''.join(string)
 
 # Operations
+class Unary(Node):
+	def __init__(self, op, value):
+		self.op = op
+		self.value = value
+
+		self.ops = {
+			'-': operator.neg,
+			'!': operator.not_
+		}
+
+	def evaluate(self, scope):
+		value = self.value.evaluate(scope)
+
+		if self.op in self.ops:
+			return self.ops[self.op](value)
+
+
 class Operation(Node):
 	def __init__(self, op='', left=None, right=None):
 		self.op = op
