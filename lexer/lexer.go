@@ -30,12 +30,14 @@ func (l *Lexer) Next() (pos int, tok token.Token, lit string) {
 // nextToken:
 	l.ignoreWhitespace()
 
+	pos = l.pos
 	// insertSemicolon := false
 
 	switch char := l.char; {
 	// Identifier or keyword
 	case isLetter(char):
-
+		lit = l.checkIdentifier()
+		tok = token.Lookup(lit)
 		// insertSemicolon = true
 	}
 
@@ -69,9 +71,9 @@ func (l *Lexer) next() {
 	case char >= 0x80:
 		char, width = utf8.DecodeRune(l.src[readPos:])
 		if char == utf8.RuneError && width == 1 {
-			l.error("illegal UTF-8 encoding")
+			l.error("Illegal UTF-8 encoding")
 		} else if char == byteOrderMark && l.pos > 0 {
-			l.error("illegal byte order mark")
+			l.error("Illegal byte order mark")
 		}
 	}
 
