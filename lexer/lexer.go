@@ -3,6 +3,7 @@ package lexer
 import (
 	"unicode"
 	"github.com/ackwell/prototypical/token"
+	"unicode/utf8"
 )
 
 type Lexer struct {
@@ -25,24 +26,63 @@ func (l *Lexer) Init(src []byte) {
 	l.pos = 0
 }
 
-func (l *Lexer) Next() (tok token.Token) {
+func (l *Lexer) Next() (pos int, tok token.Token, lit string) {
 // nextToken:
-	return token.UNKNOWN
+	l.ignoreWhitespace()
+
+	// insertSemicolon := false
+
+	switch char := l.char; {
+	// Identifier or keyword
+	case isLetter(char):
+
+		// insertSemicolon = true
+	}
+
+	return
 }
 
 func (l *Lexer) ignoreWhitespace() {
-	for isWhitespace(l.char) {
+	for unicode.IsSpace(l.char) {
 		l.next()
 	}
 }
 
-func (l *Lexer) next(){
+// Byte order mark
+const byteOrderMark = 0xFEFF
 
+func (l *Lexer) next() {
+	if l.pos >= len(l.src) {
+		// char < 0 == EOF
+		l.char = -1
+		return
+	}
+
+	readPos := l.pos
+	char, width := rune(l.src[readPos]), 1
+	switch {
+	// Disallow NUL
+	case char == 0:
+		l.error("Invalid character NUL")
+
+	// Handle non-ASCII
+	case char >= 0x80:
+		char, width = utf8.DecodeRune(l.src[readPos:])
+		if char == utf8.RuneError && width == 1 {
+			l.error("illegal UTF-8 encoding")
+		} else if char == byteOrderMark && l.pos > 0 {
+			l.error("illegal byte order mark")
+		}
+	}
+
+	l.pos += width
+	l.char = char
 }
 
-func isWhitespace(char rune) bool {
-	return char == ' ' || char == '\t' || char == '\n' || char == '\r'
+func (l *Lexer) error(message string) {
+	panic(message)
 }
+
 
 // 'Borrowed' from go/scanner.
 func isLetter(char rune) bool {
