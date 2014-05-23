@@ -1,33 +1,37 @@
 package lexer
 
 import (
-	"bytes"
+	"unicode"
+	"github.com/ackwell/prototypical/token"
 )
 
 type Lexer struct {
-	source []byte
+	src []byte
 
-	current *bytes.Buffer
-	position int
+	pos int
 }
 
-func New(source []byte) Lexer {
+func New(src []byte) Lexer {
 	lexer := Lexer{}
-	lexer.Init(source)
+	lexer.Init(src)
 	return lexer
 }
 
-func (l *Lexer) Init(source []byte) {
-	l.source = source
+func (l *Lexer) Init(src []byte) {
+	l.src = src
 
-	l.current = new(bytes.Buffer)
-	l.position = 0
+	l.pos = 0
 }
 
-func (l *Lexer) Next() string {
-	return "hello world"
+func (l *Lexer) Next() (tok token.Token) {
+	return token.UNKNOWN
 }
 
-func (l *Lexer) next() {
+// 'Borrowed' from go/scanner.
+func isLetter(ch rune) bool {
+	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '_' || ch >= 0x80 && unicode.IsLetter(ch)
+}
 
+func isDigit(ch rune) bool {
+	return '0' <= ch && ch <= '9' || ch >= 0x80 && unicode.IsDigit(ch)
 }
