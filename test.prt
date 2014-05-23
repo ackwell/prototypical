@@ -1,0 +1,11 @@
+# Functions can access their calling scope through the 'scope' namespace.
+# Combined with above points, this allows functions to differ depending on how they are chained.
+falseyFunction = {
+	# It is idiomatic to call your primary result 'result'.
+	# This is followed and expected by the standard library.
+	result = false;
+};
+falseyFunction().else({
+	out('this will print!');
+});
+# > this will print!
