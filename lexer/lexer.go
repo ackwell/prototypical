@@ -84,6 +84,48 @@ func (l *Lexer) Next() (pos int, tok token.Token, lit string) {
 			tok = l.switchToken(token.DIVIDE, '=', token.DIVIDE_EQUALS)
 		case '%':
 			tok = l.switchToken(token.MODULUS, '=', token.MODULUS_EQUALS)
+
+		// Comparisons
+		case '>':
+			tok = l.switchToken(token.GREATER, '=', token.GREATER_EQUAL)
+		case '<':
+			tok = l.switchToken(token.LESS, '=', token.LESS_EQUAL)
+		case '!':
+			tok = l.switchToken(token.NOT, '=', token.NOT_EQUAL)
+		// Possibly handle binary ops later (& and |)
+		case '&':
+			tok = l.switchToken(token.UNKNOWN, '&', token.AND)
+		case '|':
+			tok = l.switchToken(token.UNKNOWN, '|', token.OR)
+
+		// Punctuation
+		case '.':
+			// parhaps handle numbers of format '.1234'?
+			tok = token.PERIOD
+		case ',':
+			tok = token.COMMA
+		case '|':
+			tok = token.PIPE
+			insertSemicolon = true
+		case ';':
+			tok = token.SEMICOLON
+			lit = ";"
+
+		case '(':
+			tok = token.PAREN_LEFT
+		case ')':
+			tok = token.PAREN_RIGHT
+			insertSemicolon = true
+		case '{':
+			tok = token.BRACE_LEFT
+		case '}':
+			tok = token.BRACE_RIGHT
+			insertSemicolon = true
+		case '[':
+			tok = token.BRACKET_LEFT
+		case ']':
+			tok = token.BRACKET_RIGHT
+			insertSemicolon = true
 		}
 	}
 
