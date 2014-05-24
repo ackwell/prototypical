@@ -1,17 +1,17 @@
 package lexer
 
 import (
-	"unicode"
 	"github.com/ackwell/prototypical/token"
+	"unicode"
 	"unicode/utf8"
 )
 
 type Lexer struct {
 	src []byte
 
-	char rune
-	pos int
-	readPos int
+	char            rune
+	pos             int
+	readPos         int
 	insertSemicolon bool
 }
 
@@ -31,7 +31,7 @@ func (l *Lexer) Init(src []byte) {
 }
 
 func (l *Lexer) Next() (pos int, tok token.Token, lit string) {
-// nextToken:
+	// nextToken:
 	l.ignoreWhitespace()
 
 	pos = l.pos
@@ -121,7 +121,6 @@ func (l *Lexer) next() {
 func (l *Lexer) error(message string) {
 	panic(message)
 }
-
 
 // 'Borrowed' from go/scanner.
 func isLetter(char rune) bool {

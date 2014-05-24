@@ -66,9 +66,9 @@ var keywords map[string]Token
 
 func init() {
 	keywords = map[string]Token{
-		"true": TRUE,
+		"true":  TRUE,
 		"false": FALSE,
-		"null": NULL,
+		"null":  NULL,
 	}
 }
 

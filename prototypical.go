@@ -1,10 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"github.com/ackwell/prototypical/lexer"
 	"github.com/ackwell/prototypical/token"
 	"io/ioutil"
-	"fmt"
 )
 
 func main() {
