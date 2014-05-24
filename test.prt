@@ -1,2 +1,5 @@
 a % thing
+
+# This is a comment
+
 a %= thing

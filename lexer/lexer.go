@@ -34,7 +34,7 @@ func (l *Lexer) Init(src []byte) {
 }
 
 func (l *Lexer) Next() (pos int, tok token.Token, lit string) {
-	// nextToken:
+nextToken:
 	l.ignoreWhitespace()
 
 	pos = l.pos
@@ -52,6 +52,11 @@ func (l *Lexer) Next() (pos int, tok token.Token, lit string) {
 	default:
 		l.next()
 		switch char {
+		// Comment
+		case '#':
+			l.consumeComment()
+			goto nextToken
+
 		// EOF
 		case -1:
 			if l.insertSemicolon {
@@ -96,7 +101,10 @@ func (l *Lexer) Next() (pos int, tok token.Token, lit string) {
 		case '&':
 			tok = l.switchToken(token.UNKNOWN, '&', token.AND)
 		case '|':
-			tok = l.switchToken(token.UNKNOWN, '|', token.OR)
+			tok = l.switchToken(token.PIPE, '|', token.OR)
+			if tok == token.PIPE {
+				insertSemicolon = true
+			}
 
 		// Punctuation
 		case '.':
@@ -104,9 +112,6 @@ func (l *Lexer) Next() (pos int, tok token.Token, lit string) {
 			tok = token.PERIOD
 		case ',':
 			tok = token.COMMA
-		case '|':
-			tok = token.PIPE
-			insertSemicolon = true
 		case ';':
 			tok = token.SEMICOLON
 			lit = ";"
@@ -141,6 +146,13 @@ func (l *Lexer) ignoreWhitespace() {
 		}
 		l.next()
 	}
+}
+
+func (l *Lexer) consumeComment() {
+	for l.char != '\n' {
+		l.next()
+	}
+	l.next()
 }
 
 func (l *Lexer) checkIdentifier() string {
