@@ -1,3 +1,6 @@
+// Heavily borrows from package go/scanner.
+// All rights for derivative work go to original authors and all that.
+
 package lexer
 
 import (
@@ -44,6 +47,8 @@ func (l *Lexer) Next() (pos int, tok token.Token, lit string) {
 		tok = token.Lookup(lit)
 		insertSemicolon = true
 
+	// TODO: Handle literal numbers
+
 	default:
 		l.next()
 		switch char {
@@ -64,6 +69,21 @@ func (l *Lexer) Next() (pos int, tok token.Token, lit string) {
 			tok = token.STRING
 			lit = l.checkString(char)
 			insertSemicolon = true
+
+		// Operators and compound assignments, and the insert token
+		case '+':
+			tok = l.switchToken(token.ADD, '=', token.ADD_EQUALS)
+		case '-':
+			tok = l.switchToken(-1, '=', token.SUBTRACT_EQUALS)
+			if tok == -1 {
+				tok = l.switchToken(token.SUBTRACT, '>', token.INSERTION)
+			}
+		case '*':
+			tok = l.switchToken(token.MULTIPLY, '=', token.MULTIPLY_EQUALS)
+		case '/':
+			tok = l.switchToken(token.DIVIDE, '=', token.DIVIDE_EQUALS)
+		case '%':
+			tok = l.switchToken(token.MODULUS, '=', token.MODULUS_EQUALS)
 		}
 	}
 
@@ -108,6 +128,14 @@ func (l *Lexer) checkString(quote rune) string {
 	return string(l.src[start:l.pos])
 }
 
+func (l *Lexer) switchToken(tok1 token.Token, char2 rune, tok2 token.Token) token.Token {
+	if l.char == char2 {
+		l.next()
+		return tok2
+	}
+	return tok1
+}
+
 // Byte order mark
 const byteOrderMark = 0xFEFF
 
@@ -115,6 +143,7 @@ func (l *Lexer) next() {
 	if l.readPos >= len(l.src) {
 		// char < 0 == EOF
 		l.char = -1
+		l.pos = len(l.src)
 		return
 	}
 
@@ -144,7 +173,6 @@ func (l *Lexer) error(message string) {
 	panic(message)
 }
 
-// 'Borrowed' from go/scanner.
 func isLetter(char rune) bool {
 	return 'a' <= char && char <= 'z' || 'A' <= char && char <= 'Z' || char == '_' || char >= 0x80 && unicode.IsLetter(char)
 }

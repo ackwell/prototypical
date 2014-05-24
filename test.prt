@@ -1,3 +1,2 @@
-hello world
-"a string"
-'another string'
+a % thing
+a %= thing
