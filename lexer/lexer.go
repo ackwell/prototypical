@@ -59,6 +59,11 @@ func (l *Lexer) Next() (pos int, tok token.Token, lit string) {
 		case '\n':
 			l.insertSemicolon = false
 			return pos, token.SEMICOLON, "\n"
+
+		case '\'', '"':
+			tok = token.STRING
+			lit = l.checkString(char)
+			insertSemicolon = true
 		}
 	}
 
@@ -83,6 +88,23 @@ func (l *Lexer) checkIdentifier() string {
 		l.next()
 	}
 
+	return string(l.src[start:l.pos])
+}
+
+func (l *Lexer) checkString(quote rune) string {
+	start := l.pos - 1
+
+	for l.char != quote {
+		char := l.char
+		l.next()
+		if char == '\n' || char < 0 {
+			l.error("String not terminated")
+			break
+		}
+		// TODO: handle escapes
+	}
+
+	l.next()
 	return string(l.src[start:l.pos])
 }
 
