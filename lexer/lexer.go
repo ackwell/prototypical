@@ -12,6 +12,7 @@ type Lexer struct {
 	char rune
 	pos int
 	readPos int
+	insertSemicolon bool
 }
 
 func New(src []byte) Lexer {
@@ -26,6 +27,7 @@ func (l *Lexer) Init(src []byte) {
 	l.char = ' '
 	l.pos = 0
 	l.readPos = 0
+	l.insertSemicolon = false
 }
 
 func (l *Lexer) Next() (pos int, tok token.Token, lit string) {
@@ -33,29 +35,43 @@ func (l *Lexer) Next() (pos int, tok token.Token, lit string) {
 	l.ignoreWhitespace()
 
 	pos = l.pos
-	// insertSemicolon := false
+	insertSemicolon := false
 
 	switch char := l.char; {
 	// Identifier or keyword
 	case isLetter(char):
 		lit = l.checkIdentifier()
 		tok = token.Lookup(lit)
-		// insertSemicolon = true
+		insertSemicolon = true
 
 	default:
 		l.next()
 		switch char {
+		// EOF
 		case -1:
-			// handle insertSemicolon here
+			if l.insertSemicolon {
+				l.insertSemicolon = false
+				return pos, token.SEMICOLON, "\n"
+			}
 			tok = token.EOF
+
+		// Newlines here mean we need to insert a semicolon
+		case '\n':
+			l.insertSemicolon = false
+			return pos, token.SEMICOLON, "\n"
 		}
 	}
+
+	l.insertSemicolon = insertSemicolon
 
 	return
 }
 
 func (l *Lexer) ignoreWhitespace() {
 	for unicode.IsSpace(l.char) {
+		if l.char == '\n' && l.insertSemicolon {
+			break
+		}
 		l.next()
 	}
 }
