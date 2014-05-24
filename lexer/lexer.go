@@ -11,6 +11,7 @@ type Lexer struct {
 
 	char rune
 	pos int
+	readPos int
 }
 
 func New(src []byte) Lexer {
@@ -24,6 +25,7 @@ func (l *Lexer) Init(src []byte) {
 
 	l.char = ' '
 	l.pos = 0
+	l.readPos = 0
 }
 
 func (l *Lexer) Next() (pos int, tok token.Token, lit string) {
@@ -39,6 +41,14 @@ func (l *Lexer) Next() (pos int, tok token.Token, lit string) {
 		lit = l.checkIdentifier()
 		tok = token.Lookup(lit)
 		// insertSemicolon = true
+
+	default:
+		l.next()
+		switch char {
+		case -1:
+			// handle insertSemicolon here
+			tok = token.EOF
+		}
 	}
 
 	return
@@ -50,18 +60,29 @@ func (l *Lexer) ignoreWhitespace() {
 	}
 }
 
+func (l *Lexer) checkIdentifier() string {
+	start := l.pos
+
+	for isLetter(l.char) || isDigit(l.char) {
+		l.next()
+	}
+
+	return string(l.src[start:l.pos])
+}
+
 // Byte order mark
 const byteOrderMark = 0xFEFF
 
 func (l *Lexer) next() {
-	if l.pos >= len(l.src) {
+	if l.readPos >= len(l.src) {
 		// char < 0 == EOF
 		l.char = -1
 		return
 	}
 
-	readPos := l.pos
-	char, width := rune(l.src[readPos]), 1
+	l.pos = l.readPos
+
+	char, width := rune(l.src[l.readPos]), 1
 	switch {
 	// Disallow NUL
 	case char == 0:
@@ -69,7 +90,7 @@ func (l *Lexer) next() {
 
 	// Handle non-ASCII
 	case char >= 0x80:
-		char, width = utf8.DecodeRune(l.src[readPos:])
+		char, width = utf8.DecodeRune(l.src[l.readPos:])
 		if char == utf8.RuneError && width == 1 {
 			l.error("Illegal UTF-8 encoding")
 		} else if char == byteOrderMark && l.pos > 0 {
@@ -77,7 +98,7 @@ func (l *Lexer) next() {
 		}
 	}
 
-	l.pos += width
+	l.readPos += width
 	l.char = char
 }
 

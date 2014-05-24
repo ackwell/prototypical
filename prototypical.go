@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/ackwell/prototypical/lexer"
+	"github.com/ackwell/prototypical/token"
 	"io/ioutil"
 	"fmt"
 )
@@ -13,6 +14,12 @@ func main() {
 	}
 
 	// Temp: lexing manually
-	lexer := lexer.New(source)
-	fmt.Println(lexer.Next())
+	l := lexer.New(source)
+	for {
+		pos, tok, lit := l.Next()
+		fmt.Println(pos, tok, lit)
+		if tok == token.EOF {
+			break
+		}
+	}
 }
