@@ -35,13 +35,17 @@ const (
 	GREATER_EQUAL // >=
 	LESS_EQUAL    // <=
 	NOT_EQUAL     // !=
+	IS_EQUAL      // ==
+	comparison_end
 
+	boolean_begin
 	AND // &&
 	OR  // ||
 	NOT // !
-	comparison_end
+	boolean_end
 
 	punctuation_begin
+	EQUALS    // =
 	PERIOD    // .
 	COMMA     // ,
 	PIPE      // |
@@ -61,20 +65,3 @@ const (
 	NULL  // null
 	keywords_end
 )
-
-var keywords map[string]Token
-
-func init() {
-	keywords = map[string]Token{
-		"true":  TRUE,
-		"false": FALSE,
-		"null":  NULL,
-	}
-}
-
-func Lookup(identity string) Token {
-	if token, exists := keywords[identity]; exists {
-		return token
-	}
-	return IDENTIFIER
-}

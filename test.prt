@@ -1,5 +1,5 @@
-a % thing
+a = 1.5
 
-# This is a comment
+#a += 2
 
-a %= thing
+#out(a)

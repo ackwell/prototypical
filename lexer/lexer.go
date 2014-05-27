@@ -47,7 +47,10 @@ nextToken:
 		tok = token.Lookup(lit)
 		insertSemicolon = true
 
-	// TODO: Handle literal numbers
+	case isDigit(char):
+		lit = l.checkNumber(false)
+		tok = token.NUMBER
+		insertSemicolon = true
 
 	default:
 		l.next()
@@ -107,9 +110,16 @@ nextToken:
 			}
 
 		// Punctuation
+		case '=':
+			tok = token.EQUALS
 		case '.':
-			// parhaps handle numbers of format '.1234'?
-			tok = token.PERIOD
+			if isDigit(l.char) {
+				lit = l.checkNumber(true)
+				tok = token.NUMBER
+				insertSemicolon = true
+			} else {
+				tok = token.PERIOD
+			}
 		case ',':
 			tok = token.COMMA
 		case ';':
@@ -136,6 +146,10 @@ nextToken:
 
 	l.insertSemicolon = insertSemicolon
 
+	if tok == token.UNKNOWN {
+		lit = string(l.char)
+	}
+
 	return
 }
 
@@ -159,6 +173,30 @@ func (l *Lexer) checkIdentifier() string {
 	start := l.pos
 
 	for isLetter(l.char) || isDigit(l.char) {
+		l.next()
+	}
+
+	return string(l.src[start:l.pos])
+}
+
+func (l *Lexer) checkNumber(seenPeriod bool) string {
+	start := l.pos
+	pointConsumed := false
+
+	if seenPeriod {
+		start -= 1
+		pointConsumed = true
+	}
+
+	for isDigit(l.char) || l.char == '.' {
+		// Only consume one point
+		if l.char == '.' {
+			if pointConsumed {
+				break
+			}
+			pointConsumed = true
+		}
+
 		l.next()
 	}
 
