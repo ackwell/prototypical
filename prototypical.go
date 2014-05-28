@@ -5,5 +5,5 @@ import (
 )
 
 func main() {
-	parser.ParseFile("test.prt")
+	_ = parser.ParseFile("test.prt")
 }
