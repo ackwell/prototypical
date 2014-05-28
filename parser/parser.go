@@ -1,11 +1,11 @@
 package parser
 
 import (
+	"fmt"
+	"github.com/ackwell/prototypical/ast"
 	"github.com/ackwell/prototypical/lexer"
 	"github.com/ackwell/prototypical/token"
-	"github.com/ackwell/prototypical/ast"
 	"strconv"
-	"fmt"
 )
 
 type parser struct {
@@ -42,7 +42,7 @@ func (p *parser) parseExpression() (expression ast.Expression) {
 	case p.tok == token.EQUALS, token.IsCompound(p.tok):
 		expression = p.parseAssign(location)
 
-	// TODO: case for token.INSERTION
+		// TODO: case for token.INSERTION
 	}
 
 	if p.tok != token.SEMICOLON {
@@ -125,7 +125,7 @@ func (p *parser) parseFormulaPrecedence(left ast.Evaluable, lastPrec int) ast.Ev
 		right := p.parseUnary()
 
 		if prec < token.GetPrecedence(p.tok) {
-			right = p.parseFormulaPrecedence(right, prec + 1)
+			right = p.parseFormulaPrecedence(right, prec+1)
 		}
 
 		left = &ast.Operation{operator, left, right}

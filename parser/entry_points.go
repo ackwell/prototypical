@@ -1,9 +1,9 @@
 package parser
 
 import (
-	"io/ioutil"
-	"github.com/ackwell/prototypical/token"
 	"github.com/ackwell/prototypical/object"
+	"github.com/ackwell/prototypical/token"
+	"io/ioutil"
 )
 
 func ParseFile(filename string) *object.Function {

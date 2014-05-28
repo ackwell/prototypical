@@ -5,13 +5,12 @@ import (
 )
 
 type Object interface {
-
 }
 
 type Function struct {
 	expressions []ast.Expression
 
-	parents []*Context
+	parents  []*Context
 	defaults map[string]*Object
 }
 
@@ -27,4 +26,4 @@ func (f *Function) call() {
 
 }
 
-type Context struct {}
+type Context struct{}

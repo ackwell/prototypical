@@ -12,7 +12,5 @@ type Assignable interface {
 	assign()
 }
 
-
 type LocationSegment interface {
-
 }

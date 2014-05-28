@@ -32,7 +32,7 @@ type Identity struct {
 // Assign
 type Assign struct {
 	Location *Location
-	Formula Evaluable
+	Formula  Evaluable
 }
 
 func (a *Assign) execute() {
@@ -46,7 +46,7 @@ func (a *Assign) execute() {
 // Unary
 type Unary struct {
 	Operator token.Token
-	Value Evaluable
+	Value    Evaluable
 }
 
 func (u *Unary) evaluate() {
@@ -55,12 +55,12 @@ func (u *Unary) evaluate() {
 
 // Operation
 type Operation struct {
-	Operation token.Token
-	Left,	Right Evaluable
+	Operation   token.Token
+	Left, Right Evaluable
 }
 
 func (o *Operation) evaluate() {
-	
+
 }
 
 // Literals
@@ -69,5 +69,5 @@ type LiteralNumber struct {
 }
 
 func (l *LiteralNumber) evaluate() {
-	
+
 }
