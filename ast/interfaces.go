@@ -13,4 +13,8 @@ type Assignable interface {
 }
 
 type LocationSegment interface {
+	Evaluable
+	Assignable
+
+	lookup(scope *object.Context) *object.Context
 }

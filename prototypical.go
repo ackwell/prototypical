@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/ackwell/prototypical/parser"
 	"github.com/ackwell/prototypical/object"
+	"github.com/davecgh/go-spew/spew"
 )
 
 func main() {
@@ -11,5 +12,6 @@ func main() {
 	scope := new(object.Context)
 
 	rootFunction := parser.ParseFile("test.prt")
-	rootFunction.Call(arguments, scope)
+	thing := rootFunction.Call(arguments, scope)
+	spew.Dump(thing)
 }
