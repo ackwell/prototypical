@@ -1,5 +1,2 @@
-a = 1.5
 
-#a += 2
-
-#out(a)
+str = 'hello world'

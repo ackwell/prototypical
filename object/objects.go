@@ -1,9 +1,5 @@
 package object
 
-import (
-	"fmt"
-)
-
 type Object interface {
 }
 
@@ -116,6 +112,9 @@ type Number struct {
 	Value float64
 }
 
-func (n *Number) String() string {
-	return fmt.Sprint(n.Value)
+
+// String
+
+type String struct {
+	Value string
 }

@@ -162,13 +162,19 @@ func (p *parser) parseValue() (value ast.Evaluable) {
 		f, _ := strconv.ParseFloat(p.lit, 64)
 		value = &ast.LiteralNumber{f}
 		p.next()
+
 	case token.STRING:
-	case token.TRUE:
-	case token.FALSE:
-	case token.NULL:
-	case token.PAREN_LEFT:
-	case token.BRACE_LEFT:
-	case token.IDENTIFIER, token.PIPE:
+		// Remove the quote marks from the lit
+		s := p.lit[1:len(p.lit)-1]
+		value = &ast.LiteralString{s}
+		p.next()
+
+	// case token.TRUE:
+	// case token.FALSE:
+	// case token.NULL:
+	// case token.PAREN_LEFT:
+	// case token.BRACE_LEFT:
+	// case token.IDENTIFIER, token.PIPE:
 	default:
 		p.error("TODO: Think up an appropriate error message")
 	}

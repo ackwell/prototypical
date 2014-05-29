@@ -116,3 +116,11 @@ type LiteralNumber struct {
 func (l *LiteralNumber) evaluate(scope *object.Context) object.Object {
 	return &object.Number{l.Value}
 }
+
+type LiteralString struct {
+	Value string
+}
+
+func (l *LiteralString) evaluate(scope *object.Context) object.Object {
+	return &object.String{l.Value}
+}
