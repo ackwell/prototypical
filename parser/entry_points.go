@@ -15,5 +15,6 @@ func ParseFile(filename string) *object.Function {
 	var p parser
 	p.init(source)
 
-	return object.NewFunction(p.parseBody(token.EOF))
+	params := make([]string, 0);
+	return object.NewFunction(params, p.parseBody(token.EOF))
 }

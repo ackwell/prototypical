@@ -5,6 +5,7 @@ import (
 	"github.com/ackwell/prototypical/ast"
 	"github.com/ackwell/prototypical/lexer"
 	"github.com/ackwell/prototypical/token"
+	"github.com/ackwell/prototypical/object"
 	"strconv"
 )
 
@@ -22,7 +23,7 @@ func (p *parser) init(source []byte) {
 }
 
 // body = {expression};
-func (p *parser) parseBody(end token.Token) (body []ast.Expression) {
+func (p *parser) parseBody(end token.Token) (body []object.Expression) {
 	// Capture expressions until reach end token
 	for p.tok != end {
 		body = append(body, p.parseExpression())
@@ -35,7 +36,7 @@ func (p *parser) parseBody(end token.Token) (body []ast.Expression) {
 }
 
 // expression = location, [assign | insert];
-func (p *parser) parseExpression() (expression ast.Expression) {
+func (p *parser) parseExpression() (expression object.Expression) {
 	location := p.parseLocation()
 
 	switch {
@@ -86,7 +87,7 @@ func (p *parser) parseLocation() (location *ast.Location) {
 
 // parseCall
 
-func (p *parser) parseAssign(location *ast.Location) ast.Expression {
+func (p *parser) parseAssign(location *ast.Location) object.Expression {
 	if token.IsCompound(p.tok) {
 		// TODO: get the operation for later use (gen the struct now?)
 	} else if p.tok != token.EQUALS {
@@ -183,7 +184,6 @@ func (p *parser) parseValue() (value ast.Evaluable) {
 
 func (p *parser) next() {
 	p.pos, p.tok, p.lit = p.lexer.Next()
-	fmt.Println(p.pos, p.tok, p.lit)
 }
 
 func (p *parser) error(message string) {

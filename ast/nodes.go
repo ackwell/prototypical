@@ -1,6 +1,8 @@
 package ast
 
 import (
+	"fmt"
+	"github.com/ackwell/prototypical/object"
 	"github.com/ackwell/prototypical/token"
 )
 
@@ -13,8 +15,12 @@ func (l *Location) AddSegment(segment LocationSegment) {
 	l.segments = append(l.segments, segment)
 }
 
-func (l *Location) execute() {
+func (l *Location) Execute(scope *object.Context) {
 
+}
+
+func (l *Location) assign(obj object.Object, scope *object.Context) {
+	fmt.Println(obj, scope)
 }
 
 // Clone
@@ -31,12 +37,12 @@ type Identity struct {
 
 // Assign
 type Assign struct {
-	Location *Location
+	Location Assignable
 	Formula  Evaluable
 }
 
-func (a *Assign) execute() {
-
+func (a *Assign) Execute(scope *object.Context) {
+	a.Location.assign(a.Formula.evaluate(scope), scope)
 }
 
 // Insert
@@ -49,8 +55,8 @@ type Unary struct {
 	Value    Evaluable
 }
 
-func (u *Unary) evaluate() {
-
+func (u *Unary) evaluate(scope *object.Context) object.Object {
+	return nil
 }
 
 // Operation
@@ -59,8 +65,8 @@ type Operation struct {
 	Left, Right Evaluable
 }
 
-func (o *Operation) evaluate() {
-
+func (o *Operation) evaluate(scope *object.Context) object.Object {
+	return nil
 }
 
 // Literals
@@ -68,6 +74,6 @@ type LiteralNumber struct {
 	Value float64
 }
 
-func (l *LiteralNumber) evaluate() {
-
+func (l *LiteralNumber) evaluate(scope *object.Context) object.Object {
+	return nil
 }

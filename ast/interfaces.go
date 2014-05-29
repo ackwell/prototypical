@@ -1,15 +1,15 @@
 package ast
 
-type Expression interface {
-	execute()
-}
+import (
+	"github.com/ackwell/prototypical/object"
+)
 
 type Evaluable interface {
-	evaluate()
+	evaluate(scope *object.Context) object.Object
 }
 
 type Assignable interface {
-	assign()
+	assign(obj object.Object, scope *object.Context)
 }
 
 type LocationSegment interface {
