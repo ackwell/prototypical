@@ -1,19 +1,12 @@
 package object
 
-type Object interface {
-}
-
-type Expression interface {
-	Execute(scope *Context)
-}
-
 // Function
 
 type Function struct {
 	expressions []Expression
 	parameters  []string
 
-	parents  []*Context
+	parents  []Context
 	defaults map[string]Object
 }
 
@@ -26,11 +19,11 @@ func NewFunction(parameters []string, expressions []Expression) *Function {
 	return function
 }
 
-func (f *Function) Call(arguments []Object, scope *Context) *Context {
+func (f *Function) Call(arguments []Object, scope Context) Context {
 	return f.CallWithContext(f.createContext(arguments, scope))
 }
 
-func (f *Function) createContext(arguments []Object, scope *Context) *Context {
+func (f *Function) createContext(arguments []Object, scope Context) Context {
 	// TODO: Throw error if length of args is != length of params (default args/named params?)
 
 	// Copying, so that injected arguments do not taint next call
@@ -45,10 +38,10 @@ func (f *Function) createContext(arguments []Object, scope *Context) *Context {
 
 	// TODO: Add scope to temporary parents list
 
-	return &Context{defaults, f.parents}
+	return &Dictionary{defaults, f.parents}
 }
 
-func (f *Function) CallWithContext(context *Context) *Context {
+func (f *Function) CallWithContext(context Context) Context {
 	for _, expression := range f.expressions {
 		expression.Execute(context)
 	}
@@ -56,22 +49,26 @@ func (f *Function) CallWithContext(context *Context) *Context {
 	return context
 }
 
-// Context
-
-type Context struct {
-	values  map[string]Object
-	parents []*Context
+func (f *Function) Type() string {
+	return "function"
 }
 
-func (c *Context) Get(name string) Object {
+// Dictionary
+
+type Dictionary struct {
+	values  map[string]Object
+	parents []Context
+}
+
+func (d *Dictionary) Get(name string) Object {
 	// TODO: only if local scope allowed
-	if value, ok := c.values[name]; ok {
+	if value, ok := d.values[name]; ok {
 		return value
 	}
 
 	// TODO: only if parent scope allowed
 	// TODO: probably need to change the conditional down the line
-	for _, parent := range c.parents {
+	for _, parent := range d.parents {
 		result := parent.Get(name)
 		if result != nil {
 			return result
@@ -82,17 +79,17 @@ func (c *Context) Get(name string) Object {
 	return nil
 }
 
-func (c *Context) Set(name string, value Object) {
+func (d *Dictionary) Set(name string, value Object) {
 	// Check local scope
 	// TODO: only if local scope allowed
-	if _, ok := c.values[name]; ok {
-		c.values[name] = value
+	if _, ok := d.values[name]; ok {
+		d.values[name] = value
 	}
 
 	// It wasn't local, check parents
 	// TODO: only is parent scope is allowed
 	// TODO: probably need to change the conditional down the line
-	for _, parent := range c.parents {
+	for _, parent := range d.parents {
 		if parent.Get(name) != nil {
 			parent.Set(name, value)
 			return
@@ -101,9 +98,13 @@ func (c *Context) Set(name string, value Object) {
 
 	// Wasn't in parent either, set new var locally
 	// TODO: only if local scope allowed
-	c.values[name] = value
+	d.values[name] = value
 
 	// TODO: when limiting, if it gets this far, throw error
+}
+
+func (d *Dictionary) Type() string {
+	return "dictionary"
 }
 
 // Number
@@ -112,9 +113,16 @@ type Number struct {
 	Value float64
 }
 
+func (n *Number) Type() string {
+	return "number"
+}
 
 // String
 
 type String struct {
 	Value string
+}
+
+func (s *String) Type() string {
+	return "string"
 }

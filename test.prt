@@ -3,4 +3,4 @@ sayHello = (to) {
 	result = to
 }
 
-thing = sayHello(5)
+thing = sayHello("thing")

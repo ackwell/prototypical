@@ -9,7 +9,7 @@ import (
 func main() {
 	// Somewhat temp, will need to modify to add stdlib
 	arguments := make([]object.Object, 0)
-	scope := new(object.Context)
+	scope := new(object.Dictionary)
 
 	rootFunction := parser.ParseFile("test.prt")
 	thing := rootFunction.Call(arguments, scope)
