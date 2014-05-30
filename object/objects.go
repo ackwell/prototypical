@@ -75,8 +75,7 @@ func (d *Dictionary) Get(name string) Object {
 		}
 	}
 
-	// TODO: return a null object
-	return nil
+	return new(Null)
 }
 
 func (d *Dictionary) Set(name string, value Object) {
@@ -105,6 +104,44 @@ func (d *Dictionary) Set(name string, value Object) {
 
 func (d *Dictionary) Type() string {
 	return "dictionary"
+}
+
+// Namespace
+
+type Namespace struct {
+	Name string
+	Value Object
+}
+
+func (n *Namespace) Get(name string) Object {
+	if name == n.Name {
+		return n.Value
+	}
+	return new(Null)
+}
+
+func (n *Namespace) Set(name string, value Object) {
+	// Should not be able to set on a namespace, throw error
+}
+
+func (n *Namespace) Type() string {
+	return "namespace"
+}
+
+// Null
+
+type Null struct{}
+
+func (n *Null) Get(name string) Object {
+	return n
+}
+
+func (m *Null) Set(name string, value Object) {
+	// Setting a value on null does nothing
+}
+
+func (n *Null) Type() string {
+	return "null"
 }
 
 // Number

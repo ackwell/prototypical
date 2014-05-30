@@ -101,15 +101,15 @@ func (c *Call) lookup(scope object.Context) object.Context {
 		arguments = append(arguments, argument.evaluate(scope))
 	}
 
-	function := c.Segment.evaluate(scope)
-	switch t := function.(type) {
-	case *object.Function:
-		return t.Call(arguments, scope)
-	default:
-		// TODO: Need to throw error
-		fmt.Println("Unexpected type %T", t)
-		return nil
+	obj := c.Segment.evaluate(scope)
+
+	if function, ok := obj.(*object.Function); ok {
+		return function.Call(arguments, scope)
 	}
+
+	// TODO: Need to throw error
+	fmt.Println("Unexpected type %T", obj)
+	return nil
 }
 
 // Assign
