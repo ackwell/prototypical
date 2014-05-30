@@ -85,6 +85,17 @@ func (a *Assign) Execute(scope *object.Context) {
 
 // Definition
 
+type Definition struct {
+	Parameters []string
+	Body []object.Expression
+}
+
+func (d *Definition) evaluate(scope *object.Context) object.Object {
+	function := object.NewFunction(d.Parameters, d.Body)
+	// TODO: Add scope as parent
+	return function
+}
+
 // Unary
 
 type Unary struct {
