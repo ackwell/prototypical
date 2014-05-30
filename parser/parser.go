@@ -55,7 +55,7 @@ func (p *parser) parseExpression() (expression object.Expression) {
 	return
 }
 
-// location = [clone, '.'], (identifier | call), {'.', (identifier | call)};
+// location = [clone, '.'], identifier, [call], {'.', identifier, [call]};
 // clone = '|', location, '|';
 func (p *parser) parseLocation() (location *ast.Location) {
 	location = new(ast.Location)
@@ -73,19 +73,46 @@ func (p *parser) parseLocation() (location *ast.Location) {
 	}
 
 	for p.tok == token.IDENTIFIER {
-		location.AddSegment(&ast.Identity{p.lit})
+		var segment ast.LocationSegment
+		segment = &ast.Identity{p.lit}
 
 		p.next()
 
-		// TODO: Handle calls
+		// Identity is actually a call
+		if p.tok == token.PAREN_LEFT {
+			segment = p.parseCall(segment)
+		}
 
+		location.AddSegment(segment)
+
+		// TODO: chaining
 		// TODO: Handle (lack of) token.PERIOD
 	}
 
 	return
 }
 
-// parseCall
+// call = '(', [formula, {',', formula}], ')';
+func (p *parser) parseCall(segment ast.LocationSegment) ast.LocationSegment {
+	p.next()
+
+	arguments := make([]ast.Evaluable, 0)
+	if p.tok != token.PAREN_RIGHT {
+		arguments = append(arguments, p.parseFormula())
+		for p.tok == token.COMMA {
+			p.next()
+			arguments = append(arguments, p.parseFormula())
+		}
+	}
+
+	if p.tok != token.PAREN_RIGHT {
+		p.error("Expected PAREN_RIGHT ()) token")
+	}
+
+	p.next()
+
+	return &ast.Call{segment, arguments}
+}
 
 func (p *parser) parseAssign(location *ast.Location) object.Expression {
 	if token.IsCompound(p.tok) {
@@ -169,12 +196,22 @@ func (p *parser) parseValue() (value ast.Evaluable) {
 		value = &ast.LiteralString{s}
 		p.next()
 
-	// case token.TRUE:
-	// case token.FALSE:
-	// case token.NULL:
-	// case token.PAREN_LEFT:
-	// case token.BRACE_LEFT:
-	// case token.IDENTIFIER, token.PIPE:
+	case token.TRUE:
+	case token.FALSE:
+	case token.NULL:
+
+	// Grouping: Delegate due to amiguous syntax
+	case token.PAREN_LEFT:
+		value = p.parseParen()
+
+	// Definition with no params
+	case token.BRACE_LEFT:
+		value = p.parseDefinition()
+
+	// Location/call
+	case token.IDENTIFIER, token.PIPE:
+		value = p.parseLocation()
+
 	default:
 		p.error("TODO: Think up an appropriate error message")
 	}
@@ -182,11 +219,76 @@ func (p *parser) parseValue() (value ast.Evaluable) {
 	return
 }
 
-// parseParen
+func (p *parser) parseParen() ast.Evaluable {
+	pos := p.pos
+	p.next()
 
-// parseDefinition
+	// Find the first token after closing paren
+	nested := 1
+	for nested > 0 {
+		if p.tok == token.PAREN_LEFT {
+			nested += 1
+		} else if p.tok == token.PAREN_RIGHT {
+			nested -= 1
+		}
+		p.next()
+	}
 
-// parseParameters
+	// Get the token, then jump back to the beginning
+	tok := p.tok
+	p.lexer.Jump(pos)
+	p.next()
+
+	// If it was a left brace, it's a function.
+	if tok == token.BRACE_LEFT {
+		return p.parseDefinition()
+	}
+
+	p.next()
+	formula := p.parseFormula()
+	p.next()
+	return formula
+}
+
+// definition = [parameters], '{', body, '}';
+func (p *parser) parseDefinition() ast.Evaluable {
+	params := make([]string, 0)
+
+	// starts on a paren, parse params
+	if p.tok == token.PAREN_LEFT {
+		params = p.parseParameters()
+	}
+
+	if p.tok != token.BRACE_LEFT {
+		p.error("Expected BRACE_LEFT ({) token")
+	}
+	p.next()
+
+	body := p.parseBody(token.BRACE_RIGHT)
+	return &ast.Definition{params, body}
+}
+
+// parameters = '(', identifier, {',', identifier}, '}';
+func (p *parser) parseParameters() []string {
+	p.next()
+
+	params := make([]string, 0)
+	for p.tok == token.IDENTIFIER {
+		params = append(params, p.lit)
+
+		p.next()
+		if p.tok != token.COMMA {
+			break
+		}
+		p.next()
+	}
+	if p.tok != token.PAREN_RIGHT {
+		p.error("Expected PAREN_RIGHT ()) token")
+	}
+	p.next()
+
+	return params
+}
 
 func (p *parser) next() {
 	p.pos, p.tok, p.lit = p.lexer.Next()

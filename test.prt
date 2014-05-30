@@ -1,2 +1,6 @@
 
-str = 'hello world'
+sayHello = (to) {
+	result = to
+}
+
+thing = sayHello(5)

@@ -153,6 +153,10 @@ nextToken:
 	return
 }
 
+func (l *Lexer) Jump(pos int) {
+	l.readPos = pos
+}
+
 func (l *Lexer) ignoreWhitespace() {
 	for unicode.IsSpace(l.char) {
 		if l.char == '\n' && l.insertSemicolon {
