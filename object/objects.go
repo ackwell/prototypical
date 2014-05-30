@@ -36,9 +36,10 @@ func (f *Function) createContext(arguments []Object, scope Context) Context {
 		defaults[parameter] = arguments[i]
 	}
 
-	// TODO: Add scope to temporary parents list
+	// Add scope to temporary parents list
+	parents := append(f.parents, scope)
 
-	return &Dictionary{defaults, f.parents}
+	return &Dictionary{defaults, parents}
 }
 
 func (f *Function) CallWithContext(context Context) Context {
@@ -56,19 +57,19 @@ func (f *Function) Type() string {
 // Dictionary
 
 type Dictionary struct {
-	values  map[string]Object
-	parents []Context
+	Values  map[string]Object
+	Parents []Context
 }
 
 func (d *Dictionary) Get(name string) Object {
 	// TODO: only if local scope allowed
-	if value, ok := d.values[name]; ok {
+	if value, ok := d.Values[name]; ok {
 		return value
 	}
 
 	// TODO: only if parent scope allowed
 	// TODO: probably need to change the conditional down the line
-	for _, parent := range d.parents {
+	for _, parent := range d.Parents {
 		result := parent.Get(name)
 		if result != nil {
 			return result
@@ -81,14 +82,14 @@ func (d *Dictionary) Get(name string) Object {
 func (d *Dictionary) Set(name string, value Object) {
 	// Check local scope
 	// TODO: only if local scope allowed
-	if _, ok := d.values[name]; ok {
-		d.values[name] = value
+	if _, ok := d.Values[name]; ok {
+		d.Values[name] = value
 	}
 
 	// It wasn't local, check parents
 	// TODO: only is parent scope is allowed
 	// TODO: probably need to change the conditional down the line
-	for _, parent := range d.parents {
+	for _, parent := range d.Parents {
 		if parent.Get(name) != nil {
 			parent.Set(name, value)
 			return
@@ -97,7 +98,7 @@ func (d *Dictionary) Set(name string, value Object) {
 
 	// Wasn't in parent either, set new var locally
 	// TODO: only if local scope allowed
-	d.values[name] = value
+	d.Values[name] = value
 
 	// TODO: when limiting, if it gets this far, throw error
 }

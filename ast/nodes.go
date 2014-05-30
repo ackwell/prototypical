@@ -179,3 +179,9 @@ type LiteralString struct {
 func (l *LiteralString) evaluate(scope object.Context) object.Object {
 	return &object.String{l.Value}
 }
+
+type LiteralNull struct{}
+
+func (l *LiteralNull) evaluate(scope object.Context) object.Object {
+	return new(object.Null)
+}

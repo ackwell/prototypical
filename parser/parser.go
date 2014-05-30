@@ -183,7 +183,6 @@ func (p *parser) parseUnary() ast.Evaluable {
 //       | call
 //       | definition;
 func (p *parser) parseValue() (value ast.Evaluable) {
-	// TODO: the obvious
 	switch p.tok {
 	case token.NUMBER:
 		f, _ := strconv.ParseFloat(p.lit, 64)
@@ -197,8 +196,14 @@ func (p *parser) parseValue() (value ast.Evaluable) {
 		p.next()
 
 	case token.TRUE:
+		panic("TODO")
+
 	case token.FALSE:
+		panic("TODO")
+
 	case token.NULL:
+		value = new(ast.LiteralNull)
+		p.next()
 
 	// Grouping: Delegate due to amiguous syntax
 	case token.PAREN_LEFT:
