@@ -2,3 +2,5 @@
 sayHello = (to) {
 	result = 1
 }
+
+thing = sayHello(5)

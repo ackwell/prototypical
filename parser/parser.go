@@ -55,7 +55,7 @@ func (p *parser) parseExpression() (expression object.Expression) {
 	return
 }
 
-// location = [clone, '.'], (identifier | call), {'.', (identifier | call)};
+// location = [clone, '.'], identifier, [call], {'.', identifier, [call]};
 // clone = '|', location, '|';
 func (p *parser) parseLocation() (location *ast.Location) {
 	location = new(ast.Location)
@@ -73,19 +73,46 @@ func (p *parser) parseLocation() (location *ast.Location) {
 	}
 
 	for p.tok == token.IDENTIFIER {
-		location.AddSegment(&ast.Identity{p.lit})
+		var segment ast.LocationSegment
+		segment = &ast.Identity{p.lit}
 
 		p.next()
 
-		// TODO: Handle calls
+		// Identity is actually a call
+		if p.tok == token.PAREN_LEFT {
+			segment = p.parseCall(segment)
+		}
 
+		location.AddSegment(segment)
+
+		// TODO: chaining
 		// TODO: Handle (lack of) token.PERIOD
 	}
 
 	return
 }
 
-// parseCall
+// call = '(', [formula, {',', formula}], ')';
+func (p *parser) parseCall(segment ast.LocationSegment) ast.LocationSegment {
+	p.next()
+
+	arguments := make([]ast.Evaluable, 0)
+	if p.tok != token.PAREN_RIGHT {
+		arguments = append(arguments, p.parseFormula())
+		for p.tok == token.COMMA {
+			p.next()
+			arguments = append(arguments, p.parseFormula())
+		}
+	}
+
+	if p.tok != token.PAREN_RIGHT {
+		p.error("Expected PAREN_RIGHT ()) token")
+	}
+
+	p.next()
+
+	return &ast.Call{segment, arguments}
+}
 
 func (p *parser) parseAssign(location *ast.Location) object.Expression {
 	if token.IsCompound(p.tok) {
@@ -172,8 +199,14 @@ func (p *parser) parseValue() (value ast.Evaluable) {
 	case token.PAREN_LEFT:
 		value = p.parseParen()
 
+	// Definition with no params
 	case token.BRACE_LEFT:
+		value = p.parseDefinition()
+
+	// Location/call
 	case token.IDENTIFIER, token.PIPE:
+		value = p.parseLocation()
+
 	default:
 		p.error("TODO: Think up an appropriate error message")
 	}

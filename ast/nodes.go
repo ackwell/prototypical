@@ -1,6 +1,7 @@
 package ast
 
 import (
+	"fmt"
 	"github.com/ackwell/prototypical/object"
 	"github.com/ackwell/prototypical/token"
 )
@@ -17,6 +18,10 @@ func (l *Location) AddSegment(segment LocationSegment) {
 
 func (l *Location) Execute(scope *object.Context) {
 
+}
+
+func (l *Location) evaluate(scope *object.Context) object.Object {
+	return l.segments[len(l.segments)-1].evaluate(l.lookupParent(scope))
 }
 
 func (l *Location) assign(value object.Object, scope *object.Context) {
@@ -55,7 +60,7 @@ type Identity struct {
 }
 
 func (i *Identity) evaluate(scope *object.Context) object.Object {
-	return nil
+	return scope.Get(i.Name)
 }
 
 func (i *Identity) assign(value object.Object, scope *object.Context) {
@@ -65,10 +70,43 @@ func (i *Identity) assign(value object.Object, scope *object.Context) {
 }
 
 func (i *Identity) lookup(scope *object.Context) *object.Context {
+	// TODO: scope with ^ and @ limiters
+	// TODO: will probably need to type switch this from .eval
 	return nil
 }
 
 // Call
+
+type Call struct {
+	Segment LocationSegment
+	Arguments []Evaluable
+}
+
+func (c *Call) evaluate(scope *object.Context) object.Object {
+	return c.lookup(scope)
+}
+
+func (c *Call) assign(value object.Object, scope *object.Context) {
+
+}
+
+func (c *Call) lookup(scope *object.Context) *object.Context {
+	// Evaluate arguments
+	arguments := make([]object.Object, 0)
+	for _, argument := range c.Arguments {
+		arguments = append(arguments, argument.evaluate(scope))
+	}
+
+	function := c.Segment.evaluate(scope)
+	switch t := function.(type) {
+	case *object.Function:
+		return t.Call(arguments, scope)
+	default:
+		// TODO: Need to throw error
+		fmt.Println("Unexpected type %T", t)
+		return nil
+	}
+}
 
 // Assign
 
