@@ -17,7 +17,7 @@ func (l *Location) AddSegment(segment LocationSegment) {
 }
 
 func (l *Location) Execute(scope *object.Context) {
-
+	panic("TODO: Location.Execute")
 }
 
 func (l *Location) evaluate(scope *object.Context) object.Object {
@@ -43,13 +43,16 @@ type Clone struct {
 }
 
 func (c *Clone) evaluate(scope *object.Context) object.Object {
+	panic("TODO: Clone.evaluate")
 	return nil
 }
 
 func (c *Clone) assign(value object.Object, scope *object.Context) {
+	panic("TODO: Clone.assign")
 }
 
 func (c *Clone) lookup(scope *object.Context) *object.Context {
+	panic("TODO: Clone.lookup")
 	return nil
 }
 
@@ -72,6 +75,7 @@ func (i *Identity) assign(value object.Object, scope *object.Context) {
 func (i *Identity) lookup(scope *object.Context) *object.Context {
 	// TODO: scope with ^ and @ limiters
 	// TODO: will probably need to type switch this from .eval
+	panic("TODO: Identity.lookup")
 	return nil
 }
 
@@ -87,7 +91,7 @@ func (c *Call) evaluate(scope *object.Context) object.Object {
 }
 
 func (c *Call) assign(value object.Object, scope *object.Context) {
-
+	panic("TODO: Call.assign")
 }
 
 func (c *Call) lookup(scope *object.Context) *object.Context {
@@ -142,6 +146,7 @@ type Unary struct {
 }
 
 func (u *Unary) evaluate(scope *object.Context) object.Object {
+	panic("TODO: Unary.evaluate")
 	return nil
 }
 
@@ -153,6 +158,7 @@ type Operation struct {
 }
 
 func (o *Operation) evaluate(scope *object.Context) object.Object {
+	panic("TODO: Operation.evaluate")
 	return nil
 }
 

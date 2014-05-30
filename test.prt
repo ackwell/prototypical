@@ -1,6 +1,6 @@
 
 sayHello = (to) {
-	result = 1
+	result = to
 }
 
 thing = sayHello(5)
